@@ -56,6 +56,7 @@ public class frmEditarComidas extends javax.swing.JFrame {
 
         jPanel2.setBackground(new java.awt.Color(0, 0, 204));
 
+        btnRegreasar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/regresar2.jpg"))); // NOI18N
         btnRegreasar.setText("regresar");
         btnRegreasar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
@@ -69,15 +70,15 @@ public class frmEditarComidas extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(btnRegreasar)
-                .addContainerGap(679, Short.MAX_VALUE))
+                .addComponent(btnRegreasar, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(620, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+            .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(btnRegreasar, javax.swing.GroupLayout.DEFAULT_SIZE, 38, Short.MAX_VALUE)
-                .addContainerGap())
+                .addComponent(btnRegreasar, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(48, Short.MAX_VALUE))
         );
 
         jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 758, -1));
@@ -97,7 +98,6 @@ public class frmEditarComidas extends javax.swing.JFrame {
 
         jPanel1.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 500, 758, -1));
 
-        jTable1.setBackground(new java.awt.Color(255, 255, 255));
         jTable1.setForeground(new java.awt.Color(255, 255, 255));
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
@@ -125,27 +125,27 @@ public class frmEditarComidas extends javax.swing.JFrame {
 
         campoTextoNombre.setEditable(false);
         campoTextoNombre.setBackground(new java.awt.Color(255, 255, 255));
-        campoTextoNombre.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Nombre", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 0, 12), new java.awt.Color(0, 0, 0))); // NOI18N
+        campoTextoNombre.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Nombre", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
         jPanel1.add(campoTextoNombre, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 365, 153, 55));
 
         campoTextoID.setEditable(false);
         campoTextoID.setBackground(new java.awt.Color(255, 255, 255));
-        campoTextoID.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "ID", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 0, 12), new java.awt.Color(0, 0, 0))); // NOI18N
+        campoTextoID.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "ID", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
         jPanel1.add(campoTextoID, new org.netbeans.lib.awtextra.AbsoluteConstraints(22, 365, 110, 55));
 
         campoTextoPrecio.setEditable(false);
         campoTextoPrecio.setBackground(new java.awt.Color(255, 255, 255));
-        campoTextoPrecio.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Precio", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 0, 12), new java.awt.Color(0, 0, 0))); // NOI18N
+        campoTextoPrecio.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Precio", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
         jPanel1.add(campoTextoPrecio, new org.netbeans.lib.awtextra.AbsoluteConstraints(460, 365, 70, 55));
 
         campoTextoCategoria.setEditable(false);
         campoTextoCategoria.setBackground(new java.awt.Color(255, 255, 255));
-        campoTextoCategoria.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Categoria", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 0, 12), new java.awt.Color(0, 0, 0))); // NOI18N
+        campoTextoCategoria.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Categoria", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
         jPanel1.add(campoTextoCategoria, new org.netbeans.lib.awtextra.AbsoluteConstraints(321, 365, 121, 55));
 
         campoTextoDescripcion.setEditable(false);
         campoTextoDescripcion.setBackground(new java.awt.Color(255, 255, 255));
-        campoTextoDescripcion.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Descripcion", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Segoe UI", 0, 12), new java.awt.Color(0, 0, 0))); // NOI18N
+        campoTextoDescripcion.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Descripcion", javax.swing.border.TitledBorder.CENTER, javax.swing.border.TitledBorder.DEFAULT_POSITION));
         jPanel1.add(campoTextoDescripcion, new org.netbeans.lib.awtextra.AbsoluteConstraints(150, 433, 380, 55));
 
         btnConfirmar.setText("Confirmar");
