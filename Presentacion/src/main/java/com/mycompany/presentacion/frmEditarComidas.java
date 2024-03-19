@@ -4,6 +4,7 @@
  */
 package com.mycompany.presentacion;
 
+
 /**
  *
  * @author Arturo ITSON
@@ -15,7 +16,6 @@ public class frmEditarComidas extends javax.swing.JFrame {
      */
     public frmEditarComidas() {
         initComponents();
-        
         
         
         btnConfirmar.setVisible(false);
@@ -32,8 +32,7 @@ public class frmEditarComidas extends javax.swing.JFrame {
 
         jButton1 = new javax.swing.JButton();
         jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        btnRegreasar = new javax.swing.JButton();
+        botonRegresar = new javax.swing.JButton();
         jPanel3 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
@@ -46,6 +45,8 @@ public class frmEditarComidas extends javax.swing.JFrame {
         btnEditar = new javax.swing.JButton();
         btnAgregar = new javax.swing.JButton();
         btnEliminar = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        jblPlatillos = new javax.swing.JLabel();
 
         jButton1.setText("jButton1");
 
@@ -54,34 +55,18 @@ public class frmEditarComidas extends javax.swing.JFrame {
         jPanel1.setBackground(new java.awt.Color(255, 255, 255));
         jPanel1.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jPanel2.setBackground(new java.awt.Color(0, 0, 204));
-
-        btnRegreasar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/regresar2.jpg"))); // NOI18N
-        btnRegreasar.setText("regresar");
-        btnRegreasar.addActionListener(new java.awt.event.ActionListener() {
+        botonRegresar.setBackground(new java.awt.Color(242, 245, 246));
+        botonRegresar.setForeground(new java.awt.Color(246, 243, 243));
+        botonRegresar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/regresarFinal.png"))); // NOI18N
+        botonRegresar.setText("jButton2");
+        botonRegresar.setBorder(null);
+        botonRegresar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        botonRegresar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                btnRegreasarActionPerformed(evt);
+                botonRegresarActionPerformed(evt);
             }
         });
-
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(btnRegreasar, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(620, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(btnRegreasar, javax.swing.GroupLayout.PREFERRED_SIZE, 92, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(48, Short.MAX_VALUE))
-        );
-
-        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 758, -1));
+        jPanel1.add(botonRegresar, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 64, 64));
 
         jPanel3.setBackground(new java.awt.Color(0, 0, 204));
 
@@ -93,10 +78,10 @@ public class frmEditarComidas extends javax.swing.JFrame {
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 50, Short.MAX_VALUE)
+            .addGap(0, 40, Short.MAX_VALUE)
         );
 
-        jPanel1.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 500, 758, -1));
+        jPanel1.add(jPanel3, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 510, 758, 40));
 
         jTable1.setForeground(new java.awt.Color(255, 255, 255));
         jTable1.setModel(new javax.swing.table.DefaultTableModel(
@@ -165,6 +150,35 @@ public class frmEditarComidas extends javax.swing.JFrame {
         btnEliminar.setText("Eliminar");
         jPanel1.add(btnEliminar, new org.netbeans.lib.awtextra.AbsoluteConstraints(590, 220, 100, 40));
 
+        jPanel2.setBackground(new java.awt.Color(0, 0, 204));
+
+        jblPlatillos.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        jblPlatillos.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        jblPlatillos.setText("Editor de platillos");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 758, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel2Layout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(jblPlatillos, javax.swing.GroupLayout.PREFERRED_SIZE, 415, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 40, Short.MAX_VALUE)
+            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(jPanel2Layout.createSequentialGroup()
+                    .addGap(0, 0, Short.MAX_VALUE)
+                    .addComponent(jblPlatillos)
+                    .addGap(0, 0, Short.MAX_VALUE)))
+        );
+
+        jPanel1.add(jPanel2, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 758, 40));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
@@ -188,12 +202,11 @@ public class frmEditarComidas extends javax.swing.JFrame {
         campoTextoPrecio.setEditable(true);
     }//GEN-LAST:event_btnEditarActionPerformed
 
-    private void btnRegreasarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegreasarActionPerformed
-        // TODO add your handling code here:
+    private void botonRegresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonRegresarActionPerformed
         frmActualizarMenu ac = new frmActualizarMenu();
         ac.setVisible(true);
         this.dispose();
-    }//GEN-LAST:event_btnRegreasarActionPerformed
+    }//GEN-LAST:event_botonRegresarActionPerformed
 
     /**
      * @param args the command line arguments
@@ -231,11 +244,11 @@ public class frmEditarComidas extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton botonRegresar;
     private javax.swing.JButton btnAgregar;
     private javax.swing.JButton btnConfirmar;
     private javax.swing.JButton btnEditar;
     private javax.swing.JButton btnEliminar;
-    private javax.swing.JButton btnRegreasar;
     private javax.swing.JTextField campoTextoCategoria;
     private javax.swing.JTextField campoTextoDescripcion;
     private javax.swing.JTextField campoTextoID;
@@ -247,5 +260,6 @@ public class frmEditarComidas extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel3;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JTable jTable1;
+    private javax.swing.JLabel jblPlatillos;
     // End of variables declaration//GEN-END:variables
 }

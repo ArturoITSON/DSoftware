@@ -4,7 +4,7 @@
  */
 package com.mycompany.presentacion;
 
-import java.net.URL;
+import javax.swing.Icon;
 import javax.swing.ImageIcon;
 
 /**
@@ -21,6 +21,8 @@ public class frmActualizarMenu extends javax.swing.JFrame {
     public frmActualizarMenu() {
         initComponents();
         
+
+        
     }
 
     
@@ -35,15 +37,14 @@ public class frmActualizarMenu extends javax.swing.JFrame {
     private void initComponents() {
 
         jPanel3 = new javax.swing.JPanel();
-        jPanel1 = new javax.swing.JPanel();
+        botonRegresar = new javax.swing.JButton();
         jPanel4 = new javax.swing.JPanel();
+        jPanel1 = new javax.swing.JPanel();
         botonAnadirComida = new javax.swing.JButton();
-        jButton1 = new javax.swing.JButton();
         botonConsultarMenu = new javax.swing.JButton();
         jScrollPane1 = new javax.swing.JScrollPane();
         jTable1 = new javax.swing.JTable();
         jLabel1 = new javax.swing.JLabel();
-        botonRegresar = new javax.swing.JButton();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setTitle("Actualizar Menu");
@@ -52,20 +53,18 @@ public class frmActualizarMenu extends javax.swing.JFrame {
         jPanel3.setBackground(new java.awt.Color(255, 255, 255));
         jPanel3.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
-        jPanel1.setBackground(new java.awt.Color(0, 0, 204));
-
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 0, Short.MAX_VALUE)
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 83, Short.MAX_VALUE)
-        );
-
-        jPanel3.add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 448, 620, -1));
+        botonRegresar.setBackground(new java.awt.Color(242, 245, 246));
+        botonRegresar.setForeground(new java.awt.Color(246, 243, 243));
+        botonRegresar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/imagenes/regresarFinal.png"))); // NOI18N
+        botonRegresar.setText("jButton2");
+        botonRegresar.setBorder(null);
+        botonRegresar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
+        botonRegresar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botonRegresarActionPerformed(evt);
+            }
+        });
+        jPanel3.add(botonRegresar, new org.netbeans.lib.awtextra.AbsoluteConstraints(10, 10, 64, 64));
 
         jPanel4.setBackground(new java.awt.Color(0, 0, 204));
 
@@ -82,23 +81,29 @@ public class frmActualizarMenu extends javax.swing.JFrame {
 
         jPanel3.add(jPanel4, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 620, -1));
 
+        jPanel1.setBackground(new java.awt.Color(0, 0, 204));
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 0, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGap(0, 83, Short.MAX_VALUE)
+        );
+
+        jPanel3.add(jPanel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 448, 620, -1));
+
         botonAnadirComida.setBackground(new java.awt.Color(153, 153, 153));
-        botonAnadirComida.setText("Editar Comidas");
+        botonAnadirComida.setText("Editar Platillo");
         botonAnadirComida.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 botonAnadirComidaActionPerformed(evt);
             }
         });
         jPanel3.add(botonAnadirComida, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 110, 123, 50));
-
-        jButton1.setBackground(new java.awt.Color(153, 153, 153));
-        jButton1.setText("Editar Bebidas");
-        jButton1.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jButton1ActionPerformed(evt);
-            }
-        });
-        jPanel3.add(jButton1, new org.netbeans.lib.awtextra.AbsoluteConstraints(6, 194, 123, 50));
 
         botonConsultarMenu.setBackground(new java.awt.Color(153, 153, 153));
         botonConsultarMenu.setText("Consultar Menu");
@@ -138,16 +143,6 @@ public class frmActualizarMenu extends javax.swing.JFrame {
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         jLabel1.setText("Editor de Menu");
         jPanel3.add(jLabel1, new org.netbeans.lib.awtextra.AbsoluteConstraints(178, 37, 415, -1));
-
-        botonRegresar.setForeground(new java.awt.Color(255, 255, 255));
-        botonRegresar.setIcon(new javax.swing.ImageIcon(getClass().getResource("/Imagenes/regresar2.jpg"))); // NOI18N
-        botonRegresar.setText("jButton2");
-        botonRegresar.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                botonRegresarActionPerformed(evt);
-            }
-        });
-        jPanel3.add(botonRegresar, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 20, 120, 90));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -206,20 +201,17 @@ public class frmActualizarMenu extends javax.swing.JFrame {
 
     }//GEN-LAST:event_botonAnadirComidaActionPerformed
 
-    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jButton1ActionPerformed
-
     private void botonRegresarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonRegresarActionPerformed
         ini.setVisible(true);
         this.dispose();
     }//GEN-LAST:event_botonRegresarActionPerformed
 
+    
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton botonAnadirComida;
     private javax.swing.JButton botonConsultarMenu;
     private javax.swing.JButton botonRegresar;
-    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel3;
