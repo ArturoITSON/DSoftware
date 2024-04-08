@@ -8,7 +8,7 @@ package DTO;
  *
  * @author Carlo
  */
-public class Login {
+public class LoginDTO {
     
       private int id;
     private String nombre;
@@ -16,10 +16,10 @@ public class Login {
     private String pass;
     private String rol;
 
-    public Login() {
+    public LoginDTO() {
     }
 
-    public Login(int id, String nombre, String usuario, String pass, String rol) {
+    public LoginDTO(int id, String nombre, String usuario, String pass, String rol) {
         this.id = id;
         this.nombre = nombre;
         this.usuario = usuario;

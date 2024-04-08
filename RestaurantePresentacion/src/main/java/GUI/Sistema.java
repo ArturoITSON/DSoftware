@@ -3,16 +3,17 @@ package GUI;
 import DAO.PedidosDAO;
 import DAO.PlatosDAO;
 import DAO.SalasDAO;
-import DAOs.LoginDAO;
-import DTO.Config;
-import DTO.DetallePedido;
-import DTO.Eventos;
-import DTO.Login;
-import DTO.Pedidos;
-import DTO.Platos;
-import DTO.Salas;
-import DTO.Tables;
+import DAO.LoginDAO;
+import DTO.ConfigDTO;
+import DTO.DetallePedidoDTO;
+import DTO.EventosDTO;
+import DTO.LoginDTO;
+import DTO.PedidosDTO;
+import DTO.PlatosDTO;
+import DTO.SalasDTO;
+import DTO.TablesDTO;
 import com.itextpdf.text.DocumentException;
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
@@ -37,17 +38,17 @@ import javax.swing.table.JTableHeader;
 public class Sistema extends javax.swing.JFrame {
 
     // ---VARIABLES--- //
-    Salas sl = new Salas();
+    SalasDTO sl = new SalasDTO();
     SalasDAO slDao = new SalasDAO();
-    Config conf = new Config();
-    Eventos event = new Eventos();
+    ConfigDTO conf = new ConfigDTO();
+    EventosDTO event = new EventosDTO();
 
-    Platos pla = new Platos();
+    PlatosDTO pla = new PlatosDTO();
     PlatosDAO plaDao = new PlatosDAO();
 
-    Pedidos ped = new Pedidos();
+    PedidosDTO ped = new PedidosDTO();
     PedidosDAO pedDao = new PedidosDAO();
-    DetallePedido detPedido = new DetallePedido();
+    DetallePedidoDTO detPedido = new DetallePedidoDTO();
     DefaultTableModel modelo = new DefaultTableModel();
     DefaultTableModel tmp = new DefaultTableModel();
 
@@ -58,8 +59,9 @@ public class Sistema extends javax.swing.JFrame {
     Date fechaActual = new Date();
     String fechaFormato = new SimpleDateFormat("yyyy-MM-dd").format(fechaActual);
 
-    public Sistema(Login priv) {
+    public Sistema(LoginDTO priv) {
         initComponents();
+        setLayout(new BorderLayout());
         
         
         
@@ -187,6 +189,7 @@ public class Sistema extends javax.swing.JFrame {
         txtMensaje = new javax.swing.JTextField();
         jPanel21 = new javax.swing.JPanel();
         jLabel15 = new javax.swing.JLabel();
+        jLabel21 = new javax.swing.JLabel();
         jPanel12 = new javax.swing.JPanel();
         jPanel19 = new javax.swing.JPanel();
         jPanel20 = new javax.swing.JPanel();
@@ -292,7 +295,7 @@ public class Sistema extends javax.swing.JFrame {
         btnUsuarios.setBackground(new java.awt.Color(0, 51, 204));
         btnUsuarios.setForeground(new java.awt.Color(255, 255, 255));
         btnUsuarios.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/usuarios.png"))); // NOI18N
-        btnUsuarios.setText("Usuarios");
+        btnUsuarios.setText("USUARIOS");
         btnUsuarios.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnUsuariosActionPerformed(evt);
@@ -355,7 +358,7 @@ public class Sistema extends javax.swing.JFrame {
                 .addComponent(btnConfig, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(btnUsuarios, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(146, Short.MAX_VALUE))
         );
 
         jTabbedPane1.setForeground(new java.awt.Color(102, 102, 102));
@@ -554,20 +557,25 @@ public class Sistema extends javax.swing.JFrame {
 
         jPanel16.setBackground(new java.awt.Color(153, 153, 153));
 
+        txtBuscarPlato.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
         txtBuscarPlato.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyReleased(java.awt.event.KeyEvent evt) {
                 txtBuscarPlatoKeyReleased(evt);
             }
         });
 
-        btnAddPlato.setFont(new java.awt.Font("Arial", 1, 36)); // NOI18N
+        btnAddPlato.setBackground(new java.awt.Color(0, 51, 204));
+        btnAddPlato.setFont(new java.awt.Font("Arial", 1, 24)); // NOI18N
+        btnAddPlato.setForeground(new java.awt.Color(255, 255, 255));
         btnAddPlato.setText("+");
+        btnAddPlato.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnAddPlato.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnAddPlatoActionPerformed(evt);
             }
         });
 
+        tblTemPlatos.setBackground(new java.awt.Color(153, 153, 153));
         tblTemPlatos.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -622,6 +630,7 @@ public class Sistema extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
+        tableMenu.setBackground(new java.awt.Color(153, 153, 153));
         tableMenu.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
@@ -1017,6 +1026,9 @@ public class Sistema extends javax.swing.JFrame {
 
         jPanel11.add(jPanel21, new org.netbeans.lib.awtextra.AbsoluteConstraints(0, 0, 1030, 60));
 
+        jLabel21.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Logote1.png"))); // NOI18N
+        jPanel11.add(jLabel21, new org.netbeans.lib.awtextra.AbsoluteConstraints(530, 80, 400, 400));
+
         jTabbedPane1.addTab("Datos de la Empresa", jPanel11);
 
         jPanel19.setBackground(new java.awt.Color(204, 204, 204));
@@ -1220,6 +1232,7 @@ public class Sistema extends javax.swing.JFrame {
         jLabel4.setText("PRECIO:");
 
         btnGuardar.setText("GUARDAR");
+        btnGuardar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnGuardar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnGuardarActionPerformed(evt);
@@ -1227,6 +1240,7 @@ public class Sistema extends javax.swing.JFrame {
         });
 
         btnEditar.setText("EDITAR");
+        btnEditar.setCursor(new java.awt.Cursor(java.awt.Cursor.HAND_CURSOR));
         btnEditar.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 btnEditarActionPerformed(evt);
@@ -1243,6 +1257,7 @@ public class Sistema extends javax.swing.JFrame {
         txtNombrePlato.setBackground(new java.awt.Color(153, 153, 153));
         txtNombrePlato.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         txtNombrePlato.setForeground(new java.awt.Color(0, 0, 0));
+        txtNombrePlato.setCursor(new java.awt.Cursor(java.awt.Cursor.TEXT_CURSOR));
 
         txtPrecioPlato.setBackground(new java.awt.Color(153, 153, 153));
         txtPrecioPlato.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
@@ -1366,9 +1381,9 @@ public class Sistema extends javax.swing.JFrame {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 550, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(36, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -1709,7 +1724,7 @@ public class Sistema extends javax.swing.JFrame {
          if (txtNombre.getText().equals("") || txtUsuario.getText().equals("") || txtPass.getPassword().equals("")) {
             JOptionPane.showMessageDialog(null, "Todo los campos son requeridos");
         } else {
-            Login lg = new Login();
+            LoginDTO lg = new LoginDTO();
             String usuario = txtUsuario.getText();
             String pass = String.valueOf(txtPass.getPassword());
             String nom = txtNombre.getText();
@@ -1795,7 +1810,7 @@ public class Sistema extends javax.swing.JFrame {
 
     // ---METODOS------------------------------------------------------------------------------------------------------------------------------------------------------------------ //
     private void ListarPlatos(JTable tabla) {
-        List<Platos> Listar = plaDao.Listar(txtBuscarPlato.getText(), fechaFormato);
+        List<PlatosDTO> Listar = plaDao.Listar(txtBuscarPlato.getText(), fechaFormato);
         modelo = (DefaultTableModel) tabla.getModel();
         Object[] ob = new Object[3];
         for (int i = 0; i < Listar.size(); i++) {
@@ -1805,14 +1820,11 @@ public class Sistema extends javax.swing.JFrame {
             modelo.addRow(ob);
         }
         tabla.setModel(modelo);
-        JTableHeader header = tabla.getTableHeader();
-        header.setOpaque(false);
-        header.setBackground(new Color(0, 110, 255));
-        header.setForeground(Color.BLACK);
+        colorHeader(TablePlatos);
     }
     
     private void ListarSalas() {
-        List<Salas> Listar = slDao.Listar();
+        List<SalasDTO> Listar = slDao.Listar();
         modelo = (DefaultTableModel) tableSala.getModel();
         Object[] ob = new Object[3];
         for (int i = 0; i < Listar.size(); i++) {
@@ -1829,8 +1841,8 @@ public class Sistema extends javax.swing.JFrame {
         tabla.setModel(modelo);
         JTableHeader header = tabla.getTableHeader();
         header.setOpaque(false);
-        header.setBackground(Color.GREEN);
-        header.setForeground(Color.BLACK);
+        header.setBackground(Color.BLUE);
+        header.setForeground(Color.WHITE);
     }
     
     private void TotalPagar(JTable tabla, JLabel label) {
@@ -1871,7 +1883,7 @@ public class Sistema extends javax.swing.JFrame {
     }
     
     private void panelSalas() {
-    List<Salas> Listar = slDao.Listar();
+    List<SalasDTO> Listar = slDao.Listar();
     for (int i = 0; i < Listar.size(); i++) {
         int id = Listar.get(i).getId();
         int cantidad = Listar.get(i).getMesas();
@@ -1897,7 +1909,7 @@ private void panelMesas(int id_sala, int cant) {
         JButton boton = new JButton("MESA N°: " + i, new ImageIcon(getClass().getResource("/images/mesa.png")));
         boton.setHorizontalTextPosition(JButton.CENTER);
         boton.setVerticalTextPosition(JButton.BOTTOM);
-        int verificar = pedDao.verificarStado(num_mesa, id_sala);
+        int verificar = pedDao.verificarEstado(num_mesa, id_sala);
         if (verificar > 0) {
             boton.setBackground(new Color(255, 51, 51));
         } else {
@@ -1928,7 +1940,7 @@ private void panelMesas(int id_sala, int cant) {
 
     
     public void verPedidoDetalle(int id_pedido) {
-        List<DetallePedido> Listar = pedDao.verPedidoDetalle(id_pedido);
+        List<DetallePedidoDTO> Listar = pedDao.verPedidoDetalle(id_pedido);
         modelo = (DefaultTableModel) tableFinalizar.getModel();
         Object[] ob = new Object[6];
         for (int i = 0; i < Listar.size(); i++) {
@@ -1953,8 +1965,8 @@ private void panelMesas(int id_sala, int cant) {
     }
     
     private void ListarPedidos() {
-        Tables color = new Tables();
-        List<Pedidos> Listar = pedDao.listarPedidos();
+        TablesDTO color = new TablesDTO();
+        List<PedidosDTO> Listar = pedDao.listarPedidos();
         modelo = (DefaultTableModel) TablePedidos.getModel();
         Object[] ob = new Object[7];
         for (int i = 0; i < Listar.size(); i++) {
@@ -1982,7 +1994,7 @@ private void panelMesas(int id_sala, int cant) {
     }
     
     private void ListarUsuarios() {
-        List<Login> Listar = lgDao.ListarUsuarios();
+        List<LoginDTO> Listar = lgDao.ListarUsuarios();
         modelo = (DefaultTableModel) TableUsuarios.getModel();
         Object[] ob = new Object[4];
         for (int i = 0; i < Listar.size(); i++) {
@@ -2041,6 +2053,7 @@ private void panelMesas(int id_sala, int cant) {
     private javax.swing.JLabel jLabel19;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
     private javax.swing.JLabel jLabel22;
     private javax.swing.JLabel jLabel23;
     private javax.swing.JLabel jLabel24;

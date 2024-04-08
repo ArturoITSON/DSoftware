@@ -13,7 +13,7 @@ import javax.swing.table.DefaultTableCellRenderer;
  *
  * @author Carlo
  */
-public class Tables extends DefaultTableCellRenderer{
+public class TablesDTO extends DefaultTableCellRenderer{
 
     @Override
     public Component getTableCellRendererComponent(

@@ -8,7 +8,7 @@ package DTO;
  *
  * @author Carlo
  */
-public class Config {
+public class ConfigDTO {
     
       private int id;
     private String ruc;
@@ -17,11 +17,11 @@ public class Config {
     private String direccion;
     private String mensaje;
     
-    public Config(){
+    public ConfigDTO(){
         
     }
 
-    public Config(int id, String ruc, String nombre, String telefono, String direccion, String mensaje) {
+    public ConfigDTO(int id, String ruc, String nombre, String telefono, String direccion, String mensaje) {
         this.id = id;
         this.ruc = ruc;
         this.nombre = nombre;

@@ -11,7 +11,7 @@ import javax.swing.JTextField;
  *
  * @author Carlo
  */
-public class Eventos {
+public class EventosDTO {
     
     
      public void textKeyPress(KeyEvent evt) {

@@ -1,9 +1,10 @@
 
-package DAOs;
+package DAO;
 
 import Conexion.Conexion;
-import DTO.Config;
-import DTO.Login;
+import DTO.ConfigDTO;
+import DTO.LoginDTO;
+import Interfaces.ILoginDAO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,15 +16,16 @@ import java.util.List;
  *
  * @author Carlo
  */
-public class LoginDAO {
+public class LoginDAO implements ILoginDAO {
     
      Connection con;
     PreparedStatement ps;
     ResultSet rs;
     Conexion cn = new Conexion();
     
-    public Login log(String usuario, String pass){
-        Login l = new Login();
+     @Override
+    public LoginDTO log(String usuario, String pass){
+        LoginDTO l = new LoginDTO();
         String sql = "SELECT * FROM usuarios WHERE usuario = ? AND pass = ?";
         try {
             con = cn.getConnection();
@@ -45,7 +47,8 @@ public class LoginDAO {
         return l;
     }
     
-    public boolean Registrar(Login reg){
+     @Override
+    public boolean Registrar(LoginDTO reg){
         String sql = "INSERT INTO usuarios (nombre, usuario, pass, rol) VALUES (?,?,?,?)";
         try {
             con = cn.getConnection();
@@ -62,15 +65,16 @@ public class LoginDAO {
         }
     }
     
+     @Override
     public List ListarUsuarios(){
-       List<Login> Lista = new ArrayList();
+       List<LoginDTO> Lista = new ArrayList();
        String sql = "SELECT * FROM usuarios";
        try {
            con = cn.getConnection();
            ps = con.prepareStatement(sql);
            rs = ps.executeQuery();
            while (rs.next()) {               
-               Login lg = new Login();
+               LoginDTO lg = new LoginDTO();
                lg.setId(rs.getInt("id"));
                lg.setNombre(rs.getString("nombre"));
                lg.setUsuario(rs.getString("usuario"));
@@ -83,7 +87,8 @@ public class LoginDAO {
        return Lista;
    }
     
-    public boolean ModificarDatos(Config conf){
+     @Override
+    public boolean ModificarDatos(ConfigDTO conf){
         String sql = "UPDATE config SET ruc=?, nombre=?, telefono=?, direccion=?, mensaje=? WHERE id=?";
         try {
             ps = con.prepareStatement(sql);
@@ -107,8 +112,9 @@ public class LoginDAO {
         }
     }
     
-    public Config datosEmpresa(){
-        Config conf = new Config();
+     @Override
+    public ConfigDTO datosEmpresa(){
+        ConfigDTO conf = new ConfigDTO();
         String sql = "SELECT * FROM config";
         try {
             con = cn.getConnection();

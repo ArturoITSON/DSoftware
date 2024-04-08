@@ -5,7 +5,8 @@
 package DAO;
 
 import Conexion.Conexion;
-import DTO.Platos;
+import DTO.PlatosDTO;
+import Interfaces.IPlatosDAO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,7 +18,7 @@ import java.util.List;
  *
  * @author Carlo
  */
-public class PlatosDAO {
+public class PlatosDAO implements IPlatosDAO{
     
     
     Connection con;
@@ -25,7 +26,8 @@ public class PlatosDAO {
     PreparedStatement ps;
     ResultSet rs;
 
-    public boolean Registrar(Platos pla) {
+    @Override
+    public boolean Registrar(PlatosDTO pla) {
         String sql = "INSERT INTO platos (nombre, precio, fecha) VALUES (?,?,?)";
         try {
             con = cn.getConnection();
@@ -47,8 +49,9 @@ public class PlatosDAO {
         }
     }
 
+    @Override
     public List Listar(String valor, String fecha) {
-        List<Platos> Lista = new ArrayList();
+        List<PlatosDTO> Lista = new ArrayList();
         String sql = "SELECT * FROM platos WHERE fecha = ?";
         String consulta = "SELECT * FROM platos WHERE nombre LIKE '%"+valor+"%' AND fecha = ?";
         try {
@@ -61,7 +64,7 @@ public class PlatosDAO {
             ps.setString(1, fecha);
             rs = ps.executeQuery();
             while (rs.next()) {
-                Platos pl = new Platos();
+                PlatosDTO pl = new PlatosDTO();
                 pl.setId(rs.getInt("id"));
                 pl.setNombre(rs.getString("nombre"));
                 pl.setPrecio(rs.getDouble("precio"));
@@ -73,6 +76,7 @@ public class PlatosDAO {
         return Lista;
     }
 
+    @Override
     public boolean Eliminar(int id) {
         String sql = "DELETE FROM platos WHERE id = ?";
         try {
@@ -92,7 +96,8 @@ public class PlatosDAO {
         }
     }
 
-    public boolean Modificar(Platos pla) {
+    @Override
+    public boolean Modificar(PlatosDTO pla) {
         String sql = "UPDATE platos SET nombre=?, precio=? WHERE id=?";
         try {
             ps = con.prepareStatement(sql);

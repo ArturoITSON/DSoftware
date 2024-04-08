@@ -5,7 +5,8 @@
 package DAO;
 
 import Conexion.Conexion;
-import DTO.Salas;
+import DTO.SalasDTO;
+import Interfaces.ISalasDAO;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,14 +18,15 @@ import java.util.List;
  *
  * @author Carlo
  */
-public class SalasDAO {
+public class SalasDAO implements ISalasDAO{
     
     
     Connection con;
     Conexion cn = new Conexion();
     PreparedStatement ps;
     ResultSet rs;
-    public boolean RegistrarSala(Salas sl){
+    @Override
+    public boolean RegistrarSala(SalasDTO sl){
         String sql = "INSERT INTO salas(nombre, mesas) VALUES (?,?)";
         try {
            con = cn.getConnection();
@@ -45,15 +47,16 @@ public class SalasDAO {
         }
     }
     
+    @Override
     public List Listar(){
-        List<Salas> Lista = new ArrayList();
+        List<SalasDTO> Lista = new ArrayList();
         String sql = "SELECT * FROM salas";
         try {
             con = cn.getConnection();
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
             while (rs.next()) {                
-                Salas sl = new Salas();
+                SalasDTO sl = new SalasDTO();
                 sl.setId(rs.getInt("id"));
                 sl.setNombre(rs.getString("nombre"));
                 sl.setMesas(rs.getInt("mesas"));
@@ -66,6 +69,7 @@ public class SalasDAO {
         return Lista;
     }
     
+    @Override
     public boolean Eliminar(int id){
         String sql = "DELETE FROM salas WHERE id = ? ";
         try {
@@ -86,7 +90,8 @@ public class SalasDAO {
         }
     }
     
-    public boolean Modificar(Salas sl){
+    @Override
+    public boolean Modificar(SalasDTO sl){
         String sql = "UPDATE salas SET nombre=?, mesas=? WHERE id=?";
         try {
             con = cn.getConnection();

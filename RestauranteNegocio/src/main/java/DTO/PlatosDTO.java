@@ -8,20 +8,21 @@ package DTO;
  *
  * @author Carlo
  */
-public class Salas {
+public class PlatosDTO {
     
-     private int id;
+    private int id;
     private String nombre;
-    private int mesas;
-    
-    public Salas(){
-        
+    private double precio;
+    private String fecha;
+
+    public PlatosDTO() {
     }
 
-    public Salas(int id, String nombre, int mesas) {
+    public PlatosDTO(int id, String nombre, double precio, String fecha) {
         this.id = id;
         this.nombre = nombre;
-        this.mesas = mesas;
+        this.precio = precio;
+        this.fecha = fecha;
     }
 
     public int getId() {
@@ -40,12 +41,20 @@ public class Salas {
         this.nombre = nombre;
     }
 
-    public int getMesas() {
-        return mesas;
+    public double getPrecio() {
+        return precio;
     }
 
-    public void setMesas(int mesas) {
-        this.mesas = mesas;
+    public void setPrecio(double precio) {
+        this.precio = precio;
+    }
+
+    public String getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(String fecha) {
+        this.fecha = fecha;
     }
     
     

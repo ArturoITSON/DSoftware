@@ -8,7 +8,7 @@ package DTO;
  *
  * @author Carlo
  */
-public class DetallePedido {
+public class DetallePedidoDTO {
     
      private int id;
     private String nombre;
@@ -17,10 +17,10 @@ public class DetallePedido {
     private String comentario;
     private int id_pedido;
 
-    public DetallePedido() {
+    public DetallePedidoDTO() {
     }
 
-    public DetallePedido(int id, String nombre, double precio, int cantidad, String comentario, int id_pedido) {
+    public DetallePedidoDTO(int id, String nombre, double precio, int cantidad, String comentario, int id_pedido) {
         this.id = id;
         this.nombre = nombre;
         this.precio = precio;

@@ -5,8 +5,9 @@
 package DAO;
 
 import Conexion.Conexion;
-import DTO.DetallePedido;
-import DTO.Pedidos;
+import DTO.DetallePedidoDTO;
+import DTO.PedidosDTO;
+import Interfaces.IPedidosDAO;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
@@ -14,14 +15,12 @@ import com.itextpdf.text.DocumentException;
 import com.itextpdf.text.Element;
 import com.itextpdf.text.Font;
 import com.itextpdf.text.FontFactory;
-import com.itextpdf.text.Image;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
 import com.itextpdf.text.Rectangle;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
-
 import java.awt.Desktop;
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -39,7 +38,7 @@ import javax.swing.filechooser.FileSystemView;
  *
  * @author Carlo
  */
-public class PedidosDAO {
+public class PedidosDAO implements IPedidosDAO {
 
     Connection con;
     Conexion cn = new Conexion();
@@ -47,6 +46,7 @@ public class PedidosDAO {
     ResultSet rs;
     int r;
 
+    @Override
     public int IdPedido() {
         int id = 0;
         String sql = "SELECT MAX(id) FROM pedidos";
@@ -63,7 +63,8 @@ public class PedidosDAO {
         return id;
     }
 
-    public int verificarStado(int mesa, int id_sala) {
+    @Override
+    public int verificarEstado(int mesa, int id_sala) {
         int id_pedido = 0;
         String sql = "SELECT id FROM pedidos WHERE num_mesa=? AND id_sala=? AND estado = ?";
         try {
@@ -82,7 +83,8 @@ public class PedidosDAO {
         return id_pedido;
     }
 
-    public int RegistrarPedido(Pedidos ped) {
+    @Override
+    public int RegistrarPedido(PedidosDTO ped) {
         String sql = "INSERT INTO pedidos (id_sala, num_mesa, total, usuario) VALUES (?,?,?,?)";
         try {
             con = cn.getConnection();
@@ -104,7 +106,8 @@ public class PedidosDAO {
         return r;
     }
 
-    public int RegistrarDetalle(DetallePedido det) {
+    @Override
+    public int RegistrarDetalle(DetallePedidoDTO det) {
         String sql = "INSERT INTO detalle_pedidos (nombre, precio, cantidad, comentario, id_pedido) VALUES (?,?,?,?,?)";
         try {
             con = cn.getConnection();
@@ -121,8 +124,9 @@ public class PedidosDAO {
         return r;
     }
 
+    @Override
     public List verPedidoDetalle(int id_pedido) {
-        List<DetallePedido> Lista = new ArrayList();
+        List<DetallePedidoDTO> Lista = new ArrayList();
         String sql = "SELECT d.* FROM pedidos p INNER JOIN detalle_pedidos d ON p.id = d.id_pedido WHERE p.id = ?";
         try {
             con = cn.getConnection();
@@ -130,7 +134,7 @@ public class PedidosDAO {
             ps.setInt(1, id_pedido);
             rs = ps.executeQuery();
             while (rs.next()) {
-                DetallePedido det = new DetallePedido();
+                DetallePedidoDTO det = new DetallePedidoDTO();
                 det.setId(rs.getInt("id"));
                 det.setNombre(rs.getString("nombre"));
                 det.setPrecio(rs.getDouble("precio"));
@@ -144,8 +148,9 @@ public class PedidosDAO {
         return Lista;
     }
 
-    public Pedidos verPedido(int id_pedido) {
-        Pedidos ped = new Pedidos();
+    @Override
+    public PedidosDTO verPedido(int id_pedido) {
+        PedidosDTO ped = new PedidosDTO();
         String sql = "SELECT p.*, s.nombre FROM pedidos p INNER JOIN salas s ON p.id_sala = s.id WHERE p.id = ?";
         try {
             con = cn.getConnection();
@@ -166,8 +171,9 @@ public class PedidosDAO {
         return ped;
     }
 
+    @Override
     public List finalizarPedido(int id_pedido) {
-        List<DetallePedido> Lista = new ArrayList();
+        List<DetallePedidoDTO> Lista = new ArrayList();
         String sql = "SELECT d.* FROM pedidos p INNER JOIN detalle_pedidos d ON p.id = d.id_pedido WHERE p.id = ?";
         try {
             con = cn.getConnection();
@@ -175,7 +181,7 @@ public class PedidosDAO {
             ps.setInt(1, id_pedido);
             rs = ps.executeQuery();
             while (rs.next()) {
-                DetallePedido det = new DetallePedido();
+                DetallePedidoDTO det = new DetallePedidoDTO();
                 det.setId(rs.getInt("id"));
                 det.setNombre(rs.getString("nombre"));
                 det.setPrecio(rs.getDouble("precio"));
@@ -189,6 +195,7 @@ public class PedidosDAO {
         return Lista;
     }
 
+    @Override
     public void pdfPedido(int id_pedido) throws DocumentException {
        Connection con = null;
         PreparedStatement ps = null;
@@ -364,6 +371,7 @@ public class PedidosDAO {
 
     
 
+    @Override
     public boolean actualizarEstado(int id_pedido) {
         String sql = "UPDATE pedidos SET estado = ? WHERE id = ?";
         try {
@@ -379,15 +387,16 @@ public class PedidosDAO {
         }
     }
 
+    @Override
     public List listarPedidos() {
-        List<Pedidos> Lista = new ArrayList();
+        List<PedidosDTO> Lista = new ArrayList();
         String sql = "SELECT p.*, s.nombre FROM pedidos p INNER JOIN salas s ON p.id_sala = s.id ORDER BY p.fecha DESC";
         try {
             con = cn.getConnection();
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
             while (rs.next()) {
-                Pedidos ped = new Pedidos();
+                PedidosDTO ped = new PedidosDTO();
                 ped.setId(rs.getInt("id"));
                 ped.setSala(rs.getString("nombre"));
                 ped.setNum_mesa(rs.getInt("num_mesa"));
