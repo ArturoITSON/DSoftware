@@ -1,15 +1,12 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
- */
 package GUI;
 
+import Control.LoginControl;
 import DAO.LoginDAO;
 import DTO.LoginDTO;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import Interfaces.ILoginDAO;
+import Persistencia.PersistenciaException;
+
 import javax.swing.JOptionPane;
-import javax.swing.Timer;
 
 /**
  *
@@ -18,18 +15,14 @@ import javax.swing.Timer;
 public class frmLogin extends javax.swing.JFrame {
 
     // ---VARIABLES--- //
-    LoginDTO lg = new LoginDTO();
-    LoginDAO login1 = new LoginDAO();
-    private Timer tiempo;
-    int contador;
-    int segundos = 30;
+    private final LoginControl loginControl;
 
-    public frmLogin() {
+    public frmLogin(LoginControl loginControl) {
         initComponents();
-        
+        this.loginControl = loginControl;
+
         txtUsuario.setText("mungarro");
         txtContraseña.setText("admin");
-        barra.setVisible(false);
 
     }
 
@@ -49,7 +42,6 @@ public class frmLogin extends javax.swing.JFrame {
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        barra = new javax.swing.JProgressBar();
         btnEntrar = new javax.swing.JButton();
         btnSalir = new javax.swing.JButton();
 
@@ -97,9 +89,6 @@ public class frmLogin extends javax.swing.JFrame {
         jLabel3.setForeground(new java.awt.Color(0, 0, 0));
         jLabel3.setText("CONTRASEÑA:");
 
-        barra.setBackground(new java.awt.Color(255, 255, 255));
-        barra.setForeground(new java.awt.Color(0, 51, 204));
-
         btnEntrar.setBackground(new java.awt.Color(51, 204, 0));
         btnEntrar.setFont(new java.awt.Font("Arial", 1, 14)); // NOI18N
         btnEntrar.setForeground(new java.awt.Color(0, 0, 0));
@@ -142,10 +131,7 @@ public class frmLogin extends javax.swing.JFrame {
                         .addGap(94, 94, 94))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                         .addComponent(btnEntrar, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(195, 195, 195))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(barra, javax.swing.GroupLayout.PREFERRED_SIZE, 258, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(114, 114, 114))))
+                        .addGap(195, 195, 195))))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -161,9 +147,7 @@ public class frmLogin extends javax.swing.JFrame {
                 .addComponent(txtContraseña, javax.swing.GroupLayout.PREFERRED_SIZE, 35, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(31, 31, 31)
                 .addComponent(btnEntrar, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
-                .addComponent(barra, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 58, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 95, Short.MAX_VALUE)
                 .addComponent(btnSalir, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(26, 26, 26))
         );
@@ -202,46 +186,59 @@ public class frmLogin extends javax.swing.JFrame {
         String usuario = txtUsuario.getText();
         String pass = String.valueOf(txtContraseña.getPassword());
         if (!"".equals(usuario) || !"".equals(pass)) {
+            try {
+                LoginDTO loginDTO = loginControl.log(usuario, pass);
 
-            lg = login1.log(usuario, pass);
-            if (lg.getUsuario() != null && lg.getPass() != null) {
-                barra.setVisible(true);
-                contador = -1;
-                barra.setValue(0);
-                barra.setStringPainted(true);
-                tiempo = new Timer(segundos, new BarraProgreso());
-                tiempo.start();
-            } else {
-                JOptionPane.showMessageDialog(null, "Usuario o Contraseña incorrecta");
-            }
-        }
-    }
-
-    public class BarraProgreso implements ActionListener {
-
-        @Override
-        public void actionPerformed(ActionEvent ae) {
-            contador++;
-            barra.setValue(contador);
-            
-            if (contador == 100) {
-                tiempo.stop();
-                if (barra.getValue() == 100) {
-                    Sistema sis = new Sistema(lg);
-                    sis.setVisible(true);
+                if (loginDTO != null) {
                     dispose();
+                    Sistema sis = new Sistema(loginDTO);
+                    sis.setVisible(true);
+                } else {
+                    JOptionPane.showMessageDialog(null, "Usuario o Contraseña incorrecta");
                 }
+            } catch (PersistenciaException e) {
+                JOptionPane.showMessageDialog(null, "Error al iniciar sesión: " + e.getMessage());
+                e.printStackTrace();
             }
         }
     }
+    
+    
+    public static void main(String args[]) {
+    /* Set the Nimbus look and feel */
+    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+    /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+     * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+     */
+    try {
+        for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+            if ("Nimbus".equals(info.getName())) {
+                javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                break;
+            }
+        }
+    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+        java.util.logging.Logger.getLogger(frmLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+    }
+    //</editor-fold>
+
+    /* Create and display the form */
+    java.awt.EventQueue.invokeLater(() -> {
+        // Aquí inicializas tu controlador de login si es necesario
+        LoginControl loginControl = new LoginControl();
+        new frmLogin(loginControl).setVisible(true);
+    });
+}
+    
 
     /**
      * @param args the command line arguments
      */
-    
-
+    /**
+     * @param args the command line arguments
+     */
+//Sistema sis = new Sistema(lg);
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JProgressBar barra;
     private javax.swing.JButton btnEntrar;
     private javax.swing.JButton btnSalir;
     private javax.swing.JLabel jLabel1;

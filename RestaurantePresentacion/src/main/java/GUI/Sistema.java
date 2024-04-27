@@ -1,21 +1,13 @@
 package GUI;
 
-import DAO.PedidosDAO;
-import DAO.PlatosDAO;
-import DAO.SalasDAO;
-import DAO.LoginDAO;
-import DTO.ConfigDTO;
-import DTO.DetallePedidoDTO;
-import DTO.EventosDTO;
-import DTO.LoginDTO;
-import DTO.PedidosDTO;
-import DTO.PlatosDTO;
-import DTO.SalasDTO;
-import DTO.TablesDTO;
+import Control.LoginControl;
+import Control.PedidosControl;
+import Control.PlatosControl;
+import Control.SalasControl;
+import DTO.*;
+import Persistencia.PersistenciaException;
 import com.itextpdf.text.DocumentException;
-import java.awt.BorderLayout;
-import java.awt.Color;
-import java.awt.Cursor;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -23,10 +15,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
+import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -38,39 +32,31 @@ import javax.swing.table.JTableHeader;
 public class Sistema extends javax.swing.JFrame {
 
     // ---VARIABLES--- //
-    SalasDTO sl = new SalasDTO();
-    SalasDAO slDao = new SalasDAO();
-    ConfigDTO conf = new ConfigDTO();
-    EventosDTO event = new EventosDTO();
+    private SalasControl salaControl = new SalasControl();
+    private PedidosControl pedidoControl = new PedidosControl();
+    private PlatosControl platoControl = new PlatosControl();
+    private LoginControl loginControl = new LoginControl();
 
-    PlatosDTO pla = new PlatosDTO();
-    PlatosDAO plaDao = new PlatosDAO();
+    private PlatosDTO pla = new PlatosDTO();
+    private SalasDTO sl = new SalasDTO();
+    private ConfigDTO conf = new ConfigDTO();
+    private EventosDTO event = new EventosDTO();
+    private PedidosDTO ped = new PedidosDTO();
+    private DetallePedidoDTO detPedido = new DetallePedidoDTO();
 
-    PedidosDTO ped = new PedidosDTO();
-    PedidosDAO pedDao = new PedidosDAO();
-    DetallePedidoDTO detPedido = new DetallePedidoDTO();
-    DefaultTableModel modelo = new DefaultTableModel();
-    DefaultTableModel tmp = new DefaultTableModel();
+    private DefaultTableModel modelo = new DefaultTableModel();
+    private DefaultTableModel tmp = new DefaultTableModel();
 
-    LoginDAO lgDao = new LoginDAO();
-    int item;
-    double Totalpagar = 0.00;
+    private int item;
+    private double Totalpagar = 0.00;
 
-    Date fechaActual = new Date();
-    String fechaFormato = new SimpleDateFormat("yyyy-MM-dd").format(fechaActual);
+    private Date fechaActual = new Date();
+    private String fechaFormato = new SimpleDateFormat("yyyy-MM-dd").format(fechaActual);
 
-    public Sistema(LoginDTO priv) {
+    public Sistema(LoginDTO priv) throws PersistenciaException {
         initComponents();
         setLayout(new BorderLayout());
-        
-        
-        
-//        ImageIcon img = new ImageIcon(getClass().getResource("/Img/logo.png"));
-//        Image igmEscalada = img.getImage().getScaledInstance(labelLogo.getWidth(), labelLogo.getHeight(), Image.SCALE_SMOOTH);
-//        Icon icono = new ImageIcon(igmEscalada);
-//        labelLogo.setIcon(icono);
-//        this.setIconImage(img.getImage());
-//        this.setLocationRelativeTo(null);
+
         txtIdHistorialPedido.setVisible(true);
         txtIdConfig.setVisible(true);
         if (priv.getRol().equals("Asistente")) {
@@ -89,9 +75,14 @@ public class Sistema extends javax.swing.JFrame {
         txtTempIdSala.setVisible(false);
         txtTempNumMesa.setVisible(false);
         jTabbedPane1.setEnabled(false);
+        jTabbedPane1.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
+        jTabbedPane1.setBorder(null);
+
+        
+        
+        
         panelSalas();
-        
-        
+
     }
 
     /**
@@ -358,10 +349,16 @@ public class Sistema extends javax.swing.JFrame {
                 .addComponent(btnConfig, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(btnUsuarios, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(146, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jTabbedPane1.setForeground(new java.awt.Color(102, 102, 102));
+        jTabbedPane1.setTabLayoutPolicy(javax.swing.JTabbedPane.SCROLL_TAB_LAYOUT);
+        jTabbedPane1.setTabPlacement(javax.swing.JTabbedPane.RIGHT);
+        jTabbedPane1.setToolTipText("");
+        jTabbedPane1.setDebugGraphicsOptions(javax.swing.DebugGraphics.NONE_OPTION);
+        jTabbedPane1.setEnabled(false);
+        jTabbedPane1.setFocusable(false);
 
         jPanel4.setBackground(new java.awt.Color(204, 204, 204));
 
@@ -376,10 +373,10 @@ public class Sistema extends javax.swing.JFrame {
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 519, Short.MAX_VALUE)
+            .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 550, Short.MAX_VALUE)
         );
 
-        jTabbedPane1.addTab("Panel", jPanel4);
+        jTabbedPane1.addTab("", jPanel4);
 
         jPanel6.setBackground(new java.awt.Color(204, 204, 204));
         jPanel6.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
@@ -531,7 +528,7 @@ public class Sistema extends javax.swing.JFrame {
 
         jPanel6.add(jScrollPane3, new org.netbeans.lib.awtextra.AbsoluteConstraints(410, 10, 590, 490));
 
-        jTabbedPane1.addTab("Salas", jPanel6);
+        jTabbedPane1.addTab("", jPanel6);
 
         PanelMesas.setLayout(new java.awt.GridLayout(1, 0));
         jScrollPane6.setViewportView(PanelMesas);
@@ -549,11 +546,11 @@ public class Sistema extends javax.swing.JFrame {
             jPanel7Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel7Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 507, Short.MAX_VALUE)
+                .addComponent(jScrollPane6, javax.swing.GroupLayout.DEFAULT_SIZE, 538, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Mesas", jPanel7);
+        jTabbedPane1.addTab("", jPanel7);
 
         jPanel16.setBackground(new java.awt.Color(153, 153, 153));
 
@@ -693,7 +690,7 @@ public class Sistema extends javax.swing.JFrame {
         jPanel8Layout.setHorizontalGroup(
             jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
-                .addContainerGap(15, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGroup(jPanel8Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel8Layout.createSequentialGroup()
                         .addComponent(txtTempIdSala, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -703,7 +700,7 @@ public class Sistema extends javax.swing.JFrame {
                             .addComponent(totalMenu, javax.swing.GroupLayout.Alignment.TRAILING)))
                     .addComponent(jScrollPane11, javax.swing.GroupLayout.PREFERRED_SIZE, 504, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel8Layout.createSequentialGroup()
-                        .addGap(0, 6, Short.MAX_VALUE)
+                        .addGap(0, 0, Short.MAX_VALUE)
                         .addComponent(txtTempNumMesa, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addGap(334, 334, 334)
                         .addComponent(btnGenerarPedido))
@@ -745,14 +742,14 @@ public class Sistema extends javax.swing.JFrame {
                         .addComponent(txtTempIdSala, javax.swing.GroupLayout.PREFERRED_SIZE, 37, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(txtTempNumMesa, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(35, Short.MAX_VALUE))
+                .addContainerGap(66, Short.MAX_VALUE))
             .addGroup(jPanel8Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Platos", jPanel8);
+        jTabbedPane1.addTab("", jPanel8);
 
         jPanel9.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
@@ -828,7 +825,7 @@ public class Sistema extends javax.swing.JFrame {
 
         jPanel9.add(jScrollPane13, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 10, 970, 316));
 
-        jTabbedPane1.addTab("Finalizar Pedido", jPanel9);
+        jTabbedPane1.addTab("", jPanel9);
 
         jPanel10.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
@@ -884,7 +881,7 @@ public class Sistema extends javax.swing.JFrame {
 
         jPanel10.add(jScrollPane12, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 60, 970, 440));
 
-        jTabbedPane1.addTab("Historial Pedidos", jPanel10);
+        jTabbedPane1.addTab("", jPanel10);
 
         jPanel11.setLayout(new org.netbeans.lib.awtextra.AbsoluteLayout());
 
@@ -1029,7 +1026,7 @@ public class Sistema extends javax.swing.JFrame {
         jLabel21.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/Logote1.png"))); // NOI18N
         jPanel11.add(jLabel21, new org.netbeans.lib.awtextra.AbsoluteConstraints(530, 80, 400, 400));
 
-        jTabbedPane1.addTab("Datos de la Empresa", jPanel11);
+        jTabbedPane1.addTab("", jPanel11);
 
         jPanel19.setBackground(new java.awt.Color(204, 204, 204));
         jPanel19.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -1163,7 +1160,7 @@ public class Sistema extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Id", "Nombre", "Correo", "Rol"
+                "Id", "Nombre", "Usuario", "Rol"
             }
         ));
         TableUsuarios.setRowHeight(23);
@@ -1183,7 +1180,7 @@ public class Sistema extends javax.swing.JFrame {
                 .addComponent(jPanel19, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane10, javax.swing.GroupLayout.PREFERRED_SIZE, 629, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(19, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel12Layout.setVerticalGroup(
             jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -1192,10 +1189,10 @@ public class Sistema extends javax.swing.JFrame {
                 .addGroup(jPanel12Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jPanel19, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(jScrollPane10))
-                .addContainerGap(11, Short.MAX_VALUE))
+                .addContainerGap(42, Short.MAX_VALUE))
         );
 
-        jTabbedPane1.addTab("Usuarios", jPanel12);
+        jTabbedPane1.addTab("", jPanel12);
 
         jPanel14.setBackground(new java.awt.Color(204, 204, 204));
         jPanel14.setBorder(javax.swing.BorderFactory.createEtchedBorder());
@@ -1301,7 +1298,7 @@ public class Sistema extends javax.swing.JFrame {
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtNombrePlato, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 52, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 83, Short.MAX_VALUE)
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtPrecioPlato, javax.swing.GroupLayout.PREFERRED_SIZE, 40, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1345,7 +1342,7 @@ public class Sistema extends javax.swing.JFrame {
         jPanel13Layout.setHorizontalGroup(
             jPanel13Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel13Layout.createSequentialGroup()
-                .addContainerGap(15, Short.MAX_VALUE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jPanel14, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jScrollPane9, javax.swing.GroupLayout.PREFERRED_SIZE, 621, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -1361,7 +1358,7 @@ public class Sistema extends javax.swing.JFrame {
                 .addContainerGap())
         );
 
-        jTabbedPane1.addTab("Platos", jPanel13);
+        jTabbedPane1.addTab("", jPanel13);
 
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
@@ -1373,17 +1370,17 @@ public class Sistema extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 1030, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addContainerGap(45, Short.MAX_VALUE))
+                .addGap(45, 45, 45))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(jPanel1Layout.createSequentialGroup()
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 550, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(30, 30, 30))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -1402,11 +1399,15 @@ public class Sistema extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnPlatosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPlatosActionPerformed
-        // TODO add your handling code here:
+        try {
+            // TODO add your handling code here:
 
-        jTabbedPane1.setSelectedIndex(8);
-        LimpiarTable();
-        ListarPlatos(TablePlatos);
+            jTabbedPane1.setSelectedIndex(8);
+            LimpiarTable();
+            ListarPlatos(TablePlatos);
+        } catch (PersistenciaException ex) {
+            Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+        }
 
     }//GEN-LAST:event_btnPlatosActionPerformed
 
@@ -1417,11 +1418,15 @@ public class Sistema extends javax.swing.JFrame {
             pla.setNombre(txtNombrePlato.getText());
             pla.setPrecio(Double.parseDouble(txtPrecioPlato.getText()));
             pla.setFecha(fechaFormato);
-            if (plaDao.Registrar(pla)) {
-                JOptionPane.showMessageDialog(null, "Plato Registrado");
-                LimpiarTable();
-                ListarPlatos(TablePlatos);
-                LimpiarPlatos();
+            try {
+                if (platoControl.Registrar(pla)) {
+                    JOptionPane.showMessageDialog(null, "Plato Registrado");
+                    LimpiarTable();
+                    ListarPlatos(TablePlatos);
+                    LimpiarPlatos();
+                }
+            } catch (PersistenciaException ex) {
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
             }
 
         } else {
@@ -1432,7 +1437,7 @@ public class Sistema extends javax.swing.JFrame {
 
     private void btnEditarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarActionPerformed
         // TODO add your handling code here:
-        
+
         if ("".equals(txtIdPlato.getText())) {
             JOptionPane.showMessageDialog(null, "Seleecione una fila");
         } else {
@@ -1440,29 +1445,41 @@ public class Sistema extends javax.swing.JFrame {
                 pla.setNombre(txtNombrePlato.getText());
                 pla.setPrecio(Double.parseDouble(txtPrecioPlato.getText()));
                 pla.setId(Integer.parseInt(txtIdPlato.getText()));
-                if (plaDao.Modificar(pla)) {
-                    JOptionPane.showMessageDialog(null, "Plato Modificado");
-                    LimpiarTable();
-                    ListarPlatos(TablePlatos);
-                    LimpiarPlatos();
+                try {
+                    if (platoControl.Modificar(pla)) {
+                        JOptionPane.showMessageDialog(null, "Plato Modificado");
+                        LimpiarTable();
+                        ListarPlatos(TablePlatos);
+                        LimpiarPlatos();
+                    }
+                } catch (PersistenciaException ex) {
+                    Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
                 }
 
             }
         }
-        
+
     }//GEN-LAST:event_btnEditarActionPerformed
 
     private void btnEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarActionPerformed
         // TODO add your handling code here:
-        
-       if (!"".equals(txtIdPlato.getText())) {
+
+        if (!"".equals(txtIdPlato.getText())) {
             int pregunta = JOptionPane.showConfirmDialog(null, "Esta seguro de eliminar");
             if (pregunta == 0) {
-                int id = Integer.parseInt(txtIdPlato.getText());
-                plaDao.Eliminar(id);
-                LimpiarTable();
-                LimpiarPlatos();
-                ListarPlatos(TablePlatos);
+                try {
+                    int id = Integer.parseInt(txtIdPlato.getText());
+                    try {
+                        platoControl.Eliminar(id);
+                    } catch (PersistenciaException ex) {
+                        Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                    }
+                    LimpiarTable();
+                    LimpiarPlatos();
+                    ListarPlatos(TablePlatos);
+                } catch (PersistenciaException ex) {
+                    Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                }
             }
         } else {
             JOptionPane.showMessageDialog(null, "Selecciona una fila");
@@ -1471,7 +1488,7 @@ public class Sistema extends javax.swing.JFrame {
 
     private void btnAgregarComentarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarComentarioActionPerformed
         // TODO add your handling code here:
-        
+
         if (txtComentario.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "SELECCIONE UNA FILA");
         } else {
@@ -1485,21 +1502,21 @@ public class Sistema extends javax.swing.JFrame {
                 }
             }
         }
-        
+
     }//GEN-LAST:event_btnAgregarComentarioActionPerformed
 
     private void btnEliminarTempPlatoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarTempPlatoActionPerformed
         // TODO add your handling code here:
-        
+
         modelo = (DefaultTableModel) tableMenu.getModel();
         modelo.removeRow(tableMenu.getSelectedRow());
         TotalPagar(tableMenu, totalMenu);
-        
+
     }//GEN-LAST:event_btnEliminarTempPlatoActionPerformed
 
     private void btnAddPlatoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAddPlatoActionPerformed
         // TODO add your handling code here:
-        
+
         if (tblTemPlatos.getSelectedRow() >= 0) {
             int id = Integer.parseInt(tblTemPlatos.getValueAt(tblTemPlatos.getSelectedRow(), 0).toString());
             String descripcion = tblTemPlatos.getValueAt(tblTemPlatos.getSelectedRow(), 1).toString();
@@ -1537,119 +1554,161 @@ public class Sistema extends javax.swing.JFrame {
             TotalPagar(tableMenu, totalMenu);
         } else {
             JOptionPane.showMessageDialog(null, "SELECCIONA UNA FILA");
-        } 
-        
-        
+        }
+
+
     }//GEN-LAST:event_btnAddPlatoActionPerformed
 
     private void btnGenerarPedidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGenerarPedidoActionPerformed
         // TODO add your handling code here:
-        
+
         if (tableMenu.getRowCount() > 0) {
-            RegistrarPedido();
-            detallePedido();
+            try {
+                RegistrarPedido();
+            } catch (PersistenciaException ex) {
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+            }
+            try {
+                detallePedido();
+            } catch (PersistenciaException ex) {
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+            }
             LimpiarTableMenu();
             JOptionPane.showMessageDialog(null, "PEDIDO REGISTRADO");
             jTabbedPane1.setSelectedIndex(0);
         } else {
             JOptionPane.showMessageDialog(null, "NO HAY PRODUCTO EN LA PEDIDO");
         }
-        
+
     }//GEN-LAST:event_btnGenerarPedidoActionPerformed
 
     private void btnGuardarSalaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarSalaActionPerformed
         // TODO add your handling code here:
-        
+
         if (txtNombreSala.getText().equals("") || txtMesas.getText().equals("")) {
             JOptionPane.showMessageDialog(null, "Los campos esta vacios");
         } else {
             sl.setNombre(txtNombreSala.getText());
             sl.setMesas(Integer.parseInt(txtMesas.getText()));
-            slDao.RegistrarSala(sl);
+            try {
+                salaControl.RegistrarSala(sl);
+            } catch (PersistenciaException ex) {
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+            }
             JOptionPane.showMessageDialog(null, "Sala Registrado");
             LimpiarSala();
             LimpiarTable();
-            ListarSalas();
+            try {
+                ListarSalas();
+            } catch (PersistenciaException ex) {
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+            }
         }
-        
+
     }//GEN-LAST:event_btnGuardarSalaActionPerformed
 
     private void btnEditarSalaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditarSalaActionPerformed
         // TODO add your handling code here:
-        
-      if ("".equals(txtIdSala.getText())) {
-            JOptionPane.showMessageDialog(null, "Seleecione una fila");
+
+        if ("".equals(txtIdSala.getText())) {
+            JOptionPane.showMessageDialog(null, "Seleccione una fila");
         } else {
             if (!"".equals(txtNombreSala.getText())) {
                 sl.setNombre(txtNombreSala.getText());
                 sl.setId(Integer.parseInt(txtIdSala.getText()));
-                slDao.Modificar(sl);
-                JOptionPane.showMessageDialog(null, "Sala Modificado");
+                try {
+                    salaControl.Modificar(sl);
+                } catch (PersistenciaException ex) {
+                    Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                }
+                JOptionPane.showMessageDialog(null, "Sala Modificada");
                 LimpiarSala();
                 LimpiarTable();
-                ListarSalas();
+                try {
+                    ListarSalas();
+                } catch (PersistenciaException ex) {
+                    Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                }
             }
         }
-        
+
     }//GEN-LAST:event_btnEditarSalaActionPerformed
 
     private void btnEliminarSalaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEliminarSalaActionPerformed
         // TODO add your handling code here:
-        
-         if (!"".equals(txtIdSala.getText())) {
-            int pregunta = JOptionPane.showConfirmDialog(null, "Esta seguro de eliminar");
+
+        if (!"".equals(txtIdSala.getText())) {
+            int pregunta = JOptionPane.showConfirmDialog(null, "Esta seguro de eliminar?");
             if (pregunta == 0) {
                 int id = Integer.parseInt(txtIdSala.getText());
-                slDao.Eliminar(id);
+                try {
+                    salaControl.Eliminar(id);
+                } catch (PersistenciaException ex) {
+                    Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                }
                 LimpiarSala();
                 LimpiarTable();
-                ListarSalas();
+                try {
+                    ListarSalas();
+                } catch (PersistenciaException ex) {
+                    Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                }
             }
         } else {
             JOptionPane.showMessageDialog(null, "Seleccione una fila");
         }
-        
+
     }//GEN-LAST:event_btnEliminarSalaActionPerformed
 
     private void btnSalaActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSalaActionPerformed
         // TODO add your handling code here:
-        
+
         LimpiarTable();
-        ListarSalas();
+        try {
+            ListarSalas();
+        } catch (PersistenciaException ex) {
+            Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+        }
         jTabbedPane1.setSelectedIndex(1);
-        
+
     }//GEN-LAST:event_btnSalaActionPerformed
 
     private void btnPdfPedidoActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPdfPedidoActionPerformed
         // TODO add your handling code here:
-        
+
         if (txtIdHistorialPedido.getText().equals("")) {
-            JOptionPane.showMessageDialog(null, "Selecciona una fila");
+            JOptionPane.showMessageDialog(null, "Seleccione una fila");
         } else {
             try {
-                pedDao.pdfPedido(Integer.parseInt(txtIdHistorialPedido.getText()));
+                pedidoControl.generarPDFPedido(Integer.parseInt(txtIdHistorialPedido.getText()));
             } catch (DocumentException ex) {
-                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, null, ex);
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+            } catch (PersistenciaException ex) {
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
             }
             txtIdHistorialPedido.setText("");
         }
-        
+
     }//GEN-LAST:event_btnPdfPedidoActionPerformed
 
     private void btnFinalizarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFinalizarActionPerformed
         // TODO add your handling code here:
-        
-        int pregunta = JOptionPane.showConfirmDialog(null, "Esta seguro de finalizar");
+
+        int pregunta = JOptionPane.showConfirmDialog(null, "Esta seguro de finalizar?");
         if (pregunta == 0) {
-            if (pedDao.actualizarEstado(Integer.parseInt(txtIdPedido.getText()))) {
-                try {
-                    pedDao.pdfPedido(Integer.parseInt(txtIdPedido.getText()));
-                } catch (DocumentException ex) {
-                    Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, null, ex);
+            try {
+                if (pedidoControl.actualizarEstadoPedido(Integer.parseInt(txtIdPedido.getText()))) {
+                    try {
+                        pedidoControl.generarPDFPedido(Integer.parseInt(txtIdPedido.getText()));
+                    } catch (DocumentException ex) {
+                        Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                    }
                 }
+            } catch (PersistenciaException ex) {
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
             }
         }
-        
+
     }//GEN-LAST:event_btnFinalizarActionPerformed
 
     private void txtIdConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtIdConfigActionPerformed
@@ -1658,85 +1717,113 @@ public class Sistema extends javax.swing.JFrame {
 
     private void btnPedidosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPedidosActionPerformed
         // TODO add your handling code here:
-        
+
         LimpiarTable();
-        ListarPedidos();
+        try {
+            ListarPedidos();
+        } catch (PersistenciaException ex) {
+            Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+        }
         jTabbedPane1.setSelectedIndex(5);
-        
+
     }//GEN-LAST:event_btnPedidosActionPerformed
 
     private void btnConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnConfigActionPerformed
-        // TODO add your handling code here:
-        
-        jTabbedPane1.setSelectedIndex(6);
-        ListarConfig();
-        
+        try {
+            // TODO add your handling code here:
+
+            jTabbedPane1.setSelectedIndex(6);
+            ListarConfig();
+        } catch (PersistenciaException ex) {
+            Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+        }
+
     }//GEN-LAST:event_btnConfigActionPerformed
 
     private void btnActualizarConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarConfigActionPerformed
         // TODO add your handling code here:
-        
-         if (!"".equals(txtRucConfig.getText()) || !"".equals(txtNombreConfig.getText()) || !"".equals(txtTelefonoConfig.getText()) || !"".equals(txtDireccionConfig.getText())) {
-            conf.setRuc(txtRucConfig.getText());
-            conf.setNombre(txtNombreConfig.getText());
-            conf.setTelefono(txtTelefonoConfig.getText());
-            conf.setDireccion(txtDireccionConfig.getText());
-            conf.setMensaje(txtMensaje.getText());
-            conf.setId(Integer.parseInt(txtIdConfig.getText()));
-            lgDao.ModificarDatos(conf);
-            JOptionPane.showMessageDialog(null, "Datos de la empresa modificado");
-            //ListarConfig();
+
+        if (!"".equals(txtRucConfig.getText()) || !"".equals(txtNombreConfig.getText()) || !"".equals(txtTelefonoConfig.getText()) || !"".equals(txtDireccionConfig.getText())) {
+            try {
+                conf.setRuc(txtRucConfig.getText());
+                conf.setNombre(txtNombreConfig.getText());
+                conf.setTelefono(txtTelefonoConfig.getText());
+                conf.setDireccion(txtDireccionConfig.getText());
+                conf.setMensaje(txtMensaje.getText());
+                conf.setId(Integer.parseInt(txtIdConfig.getText()));
+                loginControl.ModificarDatos(conf);
+                JOptionPane.showMessageDialog(null, "Datos de la empresa modificado");
+                //ListarConfig();
+            } catch (PersistenciaException ex) {
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+            }
         } else {
             JOptionPane.showMessageDialog(null, "Los campos estan vacios");
         }
-        
+
     }//GEN-LAST:event_btnActualizarConfigActionPerformed
 
     private void btnUsuariosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUsuariosActionPerformed
-        // TODO add your handling code here:
-        
-        LimpiarTable();
-        ListarUsuarios();
-        jTabbedPane1.setSelectedIndex(7);
-        
+        try {
+            // TODO add your handling code here:
+
+            LimpiarTable();
+            ListarUsuarios();
+            jTabbedPane1.setSelectedIndex(7);
+        } catch (PersistenciaException ex) {
+            Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+        }
+
     }//GEN-LAST:event_btnUsuariosActionPerformed
 
     private void labelLogoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_labelLogoMouseClicked
         // TODO add your handling code here:
-        
+
         jTabbedPane1.setSelectedIndex(0);
         PanelSalas.removeAll();
-        panelSalas();
+        try {
+            panelSalas();
+        } catch (PersistenciaException ex) {
+            Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+        }
     }//GEN-LAST:event_labelLogoMouseClicked
 
     private void txtBuscarPlatoKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarPlatoKeyReleased
-        // TODO add your handling code here:
-        
-        LimpiarTable();
-        ListarPlatos(tblTemPlatos);
-        
-        
+        try {
+            // TODO add your handling code here:
+
+            LimpiarTable();
+            ListarPlatos(tblTemPlatos);
+        } catch (PersistenciaException ex) {
+            Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+        }
+
+
     }//GEN-LAST:event_txtBuscarPlatoKeyReleased
 
     private void btnIniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIniciarActionPerformed
         // TODO add your handling code here:
-        
-         if (txtNombre.getText().equals("") || txtUsuario.getText().equals("") || txtPass.getPassword().equals("")) {
+
+        if (txtNombre.getText().equals("") || txtUsuario.getText().equals("") || txtPass.getPassword().equals("")) {
             JOptionPane.showMessageDialog(null, "Todo los campos son requeridos");
         } else {
-            LoginDTO lg = new LoginDTO();
-            String usuario = txtUsuario.getText();
-            String pass = String.valueOf(txtPass.getPassword());
-            String nom = txtNombre.getText();
-            String rol = cbxRol.getSelectedItem().toString();
-            lg.setNombre(nom);
-            lg.setUsuario(usuario);
-            lg.setPass(pass);
-            lg.setRol(rol);
-            lgDao.Registrar(lg);
-            JOptionPane.showMessageDialog(null, "Usuario Registrado");
+            try {
+                LoginDTO lg = new LoginDTO();
+                String usuario = txtUsuario.getText();
+                String pass = String.valueOf(txtPass.getPassword());
+                String nom = txtNombre.getText();
+                String rol = cbxRol.getSelectedItem().toString();
+                lg.setNombre(nom);
+                lg.setUsuario(usuario);
+                lg.setPass(pass);
+                lg.setRol(rol);
+                loginControl.Registrar(lg);
+                JOptionPane.showMessageDialog(null, "Usuario Registrado");
+            } catch (PersistenciaException ex) {
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+            }
         }
-        
+
     }//GEN-LAST:event_btnIniciarActionPerformed
 
     private void TablePlatosMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_TablePlatosMouseClicked
@@ -1752,11 +1839,19 @@ public class Sistema extends javax.swing.JFrame {
         int fila = TablePedidos.rowAtPoint(evt.getPoint());
         int id_pedido = Integer.parseInt(TablePedidos.getValueAt(fila, 0).toString());
         LimpiarTable();
-        verPedido(id_pedido);
-        verPedidoDetalle(id_pedido);
+        try {
+            verPedido(id_pedido);
+        } catch (PersistenciaException ex) {
+            Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+        }
+        try {
+            verPedidoDetalle(id_pedido);
+        } catch (PersistenciaException ex) {
+            Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+        }
         jTabbedPane1.setSelectedIndex(4);
         btnFinalizar.setEnabled(false);
-        txtIdHistorialPedido.setText(""+id_pedido);
+        txtIdHistorialPedido.setText("" + id_pedido);
     }//GEN-LAST:event_TablePedidosMouseClicked
 
     private void tableSalaMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_tableSalaMouseClicked
@@ -1769,16 +1864,16 @@ public class Sistema extends javax.swing.JFrame {
 
     private void txtPrecioPlatoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtPrecioPlatoKeyTyped
         // TODO add your handling code here:
-        
+
         event.numberDecimalKeyPress(evt, txtPrecioPlato);
-        
+
     }//GEN-LAST:event_txtPrecioPlatoKeyTyped
 
     private void txtMesasKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtMesasKeyTyped
         // TODO add your handling code here:
-        
+
         event.numberDecimalKeyPress(evt, txtMesas);
-        
+
     }//GEN-LAST:event_txtMesasKeyTyped
 
     // ---METODOS LIMPIAR--- //
@@ -1793,7 +1888,7 @@ public class Sistema extends javax.swing.JFrame {
         txtNombrePlato.setText("");
         txtPrecioPlato.setText("");
     }
-    
+
     private void LimpiarTableMenu() {
         tmp = (DefaultTableModel) tableMenu.getModel();
         int fila = tableMenu.getRowCount();
@@ -1801,7 +1896,7 @@ public class Sistema extends javax.swing.JFrame {
             tmp.removeRow(0);
         }
     }
-    
+
     private void LimpiarSala() {
         txtIdSala.setText("");
         txtNombreSala.setText("");
@@ -1809,8 +1904,8 @@ public class Sistema extends javax.swing.JFrame {
     }
 
     // ---METODOS------------------------------------------------------------------------------------------------------------------------------------------------------------------ //
-    private void ListarPlatos(JTable tabla) {
-        List<PlatosDTO> Listar = plaDao.Listar(txtBuscarPlato.getText(), fechaFormato);
+    private void ListarPlatos(JTable tabla) throws PersistenciaException {
+        List<PlatosDTO> Listar = platoControl.Listar(txtBuscarPlato.getText(), fechaFormato);
         modelo = (DefaultTableModel) tabla.getModel();
         Object[] ob = new Object[3];
         for (int i = 0; i < Listar.size(); i++) {
@@ -1822,9 +1917,9 @@ public class Sistema extends javax.swing.JFrame {
         tabla.setModel(modelo);
         colorHeader(TablePlatos);
     }
-    
-    private void ListarSalas() {
-        List<SalasDTO> Listar = slDao.Listar();
+
+    private void ListarSalas() throws PersistenciaException {
+        List<SalasDTO> Listar = salaControl.Listar();
         modelo = (DefaultTableModel) tableSala.getModel();
         Object[] ob = new Object[3];
         for (int i = 0; i < Listar.size(); i++) {
@@ -1844,7 +1939,7 @@ public class Sistema extends javax.swing.JFrame {
         header.setBackground(Color.BLUE);
         header.setForeground(Color.WHITE);
     }
-    
+
     private void TotalPagar(JTable tabla, JLabel label) {
         Totalpagar = 0.00;
         int numFila = tabla.getRowCount();
@@ -1854,8 +1949,8 @@ public class Sistema extends javax.swing.JFrame {
         }
         label.setText(String.format("%.2f", Totalpagar));
     }
-    
-    private void RegistrarPedido() {
+
+    private void RegistrarPedido() throws PersistenciaException {
         int id_sala = Integer.parseInt(txtTempIdSala.getText());
         int num_mesa = Integer.parseInt(txtTempNumMesa.getText());
         double monto = Totalpagar;
@@ -1863,11 +1958,11 @@ public class Sistema extends javax.swing.JFrame {
         ped.setNum_mesa(num_mesa);
         ped.setTotal(monto);
         ped.setUsuario(LabelVendedor.getText());
-        pedDao.RegistrarPedido(ped);
+        pedidoControl.registrarPedido(ped);
     }
 
-    private void detallePedido() {
-        int id = pedDao.IdPedido();
+    private void detallePedido() throws PersistenciaException {
+        int id = pedidoControl.obtenerIdPedido();
         for (int i = 0; i < tableMenu.getRowCount(); i++) {
             String nombre = tableMenu.getValueAt(i, 1).toString();
             int cant = Integer.parseInt(tableMenu.getValueAt(i, 2).toString());
@@ -1877,70 +1972,85 @@ public class Sistema extends javax.swing.JFrame {
             detPedido.setPrecio(precio);
             detPedido.setComentario(tableMenu.getValueAt(i, 5).toString());
             detPedido.setId_pedido(id);
-            pedDao.RegistrarDetalle(detPedido);
+            pedidoControl.registrarDetallePedido(detPedido);
 
         }
     }
-    
-    private void panelSalas() {
-    List<SalasDTO> Listar = slDao.Listar();
-    for (int i = 0; i < Listar.size(); i++) {
-        int id = Listar.get(i).getId();
-        int cantidad = Listar.get(i).getMesas();
-        JButton boton = new JButton(Listar.get(i).getNombre(),new ImageIcon(getClass().getResource("/images/salas.png")));
-        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        boton.setHorizontalTextPosition(JButton.CENTER);
-        boton.setVerticalTextPosition(JButton.BOTTOM);
-        boton.setBackground(new Color(204, 204, 204));
-        PanelSalas.add(boton);
-        boton.addActionListener((ActionEvent e) -> {
-            LimpiarTable();
-            PanelMesas.removeAll();
-            panelMesas(id, cantidad);
-            jTabbedPane1.setSelectedIndex(2);
-        });
-    }
-}
 
-private void panelMesas(int id_sala, int cant) {
-    for (int i = 1; i <= cant; i++) {
-        int num_mesa = i;
-        //verificar estado
-        JButton boton = new JButton("MESA N°: " + i, new ImageIcon(getClass().getResource("/images/mesa.png")));
-        boton.setHorizontalTextPosition(JButton.CENTER);
-        boton.setVerticalTextPosition(JButton.BOTTOM);
-        int verificar = pedDao.verificarEstado(num_mesa, id_sala);
-        if (verificar > 0) {
-            boton.setBackground(new Color(255, 51, 51));
-        } else {
-            boton.setBackground(new Color(0, 102, 102));
+    private void panelSalas() throws PersistenciaException {
+        List<SalasDTO> Listar = salaControl.Listar();
+        for (int i = 0; i < Listar.size(); i++) {
+            int id = Listar.get(i).getId();
+            int cantidad = Listar.get(i).getMesas();
+            JButton boton = new JButton(Listar.get(i).getNombre(), new ImageIcon(getClass().getResource("/images/salas.png")));
+            boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            boton.setHorizontalTextPosition(JButton.CENTER);
+            boton.setVerticalTextPosition(JButton.BOTTOM);
+            boton.setBackground(new Color(204, 204, 204));
+            PanelSalas.add(boton);
+            boton.addActionListener((ActionEvent e) -> {
+                LimpiarTable();
+                PanelMesas.removeAll();
+                try {
+                    panelMesas(id, cantidad);
+                } catch (PersistenciaException ex) {
+                    Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                }
+                jTabbedPane1.setSelectedIndex(2);
+            });
         }
-        boton.setForeground(Color.BLACK);
-        boton.setFocusable(false);
-        boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
-        PanelMesas.add(boton);
-        boton.addActionListener((ActionEvent e) -> {
+    }
+
+    private void panelMesas(int id_sala, int cant) throws PersistenciaException {
+        for (int i = 1; i <= cant; i++) {
+            int num_mesa = i;
+            //verificar estado
+            JButton boton = new JButton("MESA N°: " + i, new ImageIcon(getClass().getResource("/images/mesa.png")));
+            boton.setHorizontalTextPosition(JButton.CENTER);
+            boton.setVerticalTextPosition(JButton.BOTTOM);
+            int verificar = pedidoControl.verificarEstadoPedido(num_mesa, id_sala);
             if (verificar > 0) {
-                LimpiarTable();
-                verPedido(verificar);
-                verPedidoDetalle(verificar);
-                btnFinalizar.setEnabled(true);
-                btnPdfPedido.setEnabled(false);
-                jTabbedPane1.setSelectedIndex(4);
+                boton.setBackground(new Color(255, 51, 51));
             } else {
-                LimpiarTable();
-                ListarPlatos(tblTemPlatos);
-                jTabbedPane1.setSelectedIndex(3);
-                txtTempIdSala.setText("" + id_sala);
-                txtTempNumMesa.setText("" + num_mesa);
+                boton.setBackground(new Color(0, 102, 102));
             }
-        });
+            boton.setForeground(Color.BLACK);
+            boton.setFocusable(false);
+            boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
+            PanelMesas.add(boton);
+            boton.addActionListener((ActionEvent e) -> {
+                if (verificar > 0) {
+                    LimpiarTable();
+                    try {
+                        verPedido(verificar);
+                    } catch (PersistenciaException ex) {
+                        Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                    }
+                    try {
+                        verPedidoDetalle(verificar);
+                    } catch (PersistenciaException ex) {
+                        Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                    }
+                    btnFinalizar.setEnabled(true);
+                    btnPdfPedido.setEnabled(false);
+                    jTabbedPane1.setSelectedIndex(4);
+                } else {
+                    LimpiarTable();
+                    try {
+                        ListarPlatos(tblTemPlatos);
+                    } catch (PersistenciaException ex) {
+                        Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                    }
+                    jTabbedPane1.setSelectedIndex(3);
+                    txtTempIdSala.setText("" + id_sala);
+                    txtTempNumMesa.setText("" + num_mesa);
+                }
+            });
+        }
     }
-}
 
-    
-    public void verPedidoDetalle(int id_pedido) {
-        List<DetallePedidoDTO> Listar = pedDao.verPedidoDetalle(id_pedido);
+    public void verPedidoDetalle(int id_pedido) throws PersistenciaException {
+        List<DetallePedidoDTO> Listar = pedidoControl.verPedidoDetalle(id_pedido);
         modelo = (DefaultTableModel) tableFinalizar.getModel();
         Object[] ob = new Object[6];
         for (int i = 0; i < Listar.size(); i++) {
@@ -1955,18 +2065,18 @@ private void panelMesas(int id_sala, int cant) {
         colorHeader(tableFinalizar);
     }
 
-    public void verPedido(int id_pedido) {
-        ped = pedDao.verPedido(id_pedido);
+    public void verPedido(int id_pedido) throws PersistenciaException {
+        ped = pedidoControl.verPedido(id_pedido);
         totalFinalizar.setText("" + ped.getTotal());
         txtFechaHora.setText("" + ped.getFecha());
         txtSalaFinalizar.setText("" + ped.getSala());
         txtNumMesaFinalizar.setText("" + ped.getNum_mesa());
         txtIdPedido.setText("" + ped.getId());
     }
-    
-    private void ListarPedidos() {
+
+    private void ListarPedidos() throws PersistenciaException {
         TablesDTO color = new TablesDTO();
-        List<PedidosDTO> Listar = pedDao.listarPedidos();
+        List<PedidosDTO> Listar = pedidoControl.listarPedidos();
         modelo = (DefaultTableModel) TablePedidos.getModel();
         Object[] ob = new Object[7];
         for (int i = 0; i < Listar.size(); i++) {
@@ -1982,9 +2092,9 @@ private void panelMesas(int id_sala, int cant) {
         colorHeader(TablePedidos);
         TablePedidos.setDefaultRenderer(Object.class, color);
     }
-    
-    public void ListarConfig() {
-        conf = lgDao.datosEmpresa();
+
+    public void ListarConfig() throws PersistenciaException {
+        conf = loginControl.datosEmpresa();
         txtIdConfig.setText("" + conf.getId());
         txtRucConfig.setText("" + conf.getRuc());
         txtNombreConfig.setText("" + conf.getNombre());
@@ -1992,9 +2102,9 @@ private void panelMesas(int id_sala, int cant) {
         txtDireccionConfig.setText("" + conf.getDireccion());
         txtMensaje.setText("" + conf.getMensaje());
     }
-    
-    private void ListarUsuarios() {
-        List<LoginDTO> Listar = lgDao.ListarUsuarios();
+
+    private void ListarUsuarios() throws PersistenciaException {
+        List<LoginDTO> Listar = loginControl.ListarUsuarios();
         modelo = (DefaultTableModel) TableUsuarios.getModel();
         Object[] ob = new Object[4];
         for (int i = 0; i < Listar.size(); i++) {
@@ -2006,8 +2116,6 @@ private void panelMesas(int id_sala, int cant) {
         }
         colorHeader(TableUsuarios);
     }
-    
-    
 
     /**
      * @param args the command line arguments

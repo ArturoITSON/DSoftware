@@ -18,59 +18,70 @@ import java.util.List;
  *
  * @author Carlo
  */
-public class SalasDAO implements ISalasDAO{
+public class SalasDAO implements ISalasDAO {
+
+    
+    private static final SalasDAO instance = new SalasDAO();
     
     
-    Connection con;
-    Conexion cn = new Conexion();
-    PreparedStatement ps;
-    ResultSet rs;
+    private Connection con;
+    private PreparedStatement ps;
+    private ResultSet rs;
+    private Conexion cn = Conexion.obtenerInstancia();
+    
+    
+    private SalasDAO() {
+    }
+
+    // Método estático para obtener la instancia Singleton
+    public static SalasDAO getInstance() {
+        return instance;
+    }
+    
+    
+
     @Override
-    public boolean RegistrarSala(SalasDTO sl){
+    public boolean RegistrarSala(SalasDTO sl) {
         String sql = "INSERT INTO salas(nombre, mesas) VALUES (?,?)";
         try {
-           con = cn.getConnection();
-           ps = con.prepareStatement(sql);
-           ps.setString(1, sl.getNombre());
-           ps.setInt(2, sl.getMesas());
-           ps.execute();
-           return true;
+            con = cn.getConnection();
+            ps = con.prepareStatement(sql);
+            ps.setString(1, sl.getNombre());
+            ps.setInt(2, sl.getMesas());
+            ps.execute();
+            return true;
         } catch (SQLException e) {
             System.out.println(e.toString());
             return false;
-        }finally{
-            try {
-                con.close();
-            } catch (SQLException e) {
-                System.out.println(e.toString());
-            }
+        } finally {
+            cerrarRecursos();
         }
     }
-    
+
     @Override
-    public List Listar(){
+    public List Listar() {
         List<SalasDTO> Lista = new ArrayList();
         String sql = "SELECT * FROM salas";
         try {
             con = cn.getConnection();
             ps = con.prepareStatement(sql);
             rs = ps.executeQuery();
-            while (rs.next()) {                
+            while (rs.next()) {
                 SalasDTO sl = new SalasDTO();
                 sl.setId(rs.getInt("id"));
                 sl.setNombre(rs.getString("nombre"));
                 sl.setMesas(rs.getInt("mesas"));
                 Lista.add(sl);
             }
-            
+
         } catch (SQLException e) {
             System.out.println(e.toString());
         }
         return Lista;
     }
-    
+
     @Override
-    public boolean Eliminar(int id){
+    public boolean Eliminar(int id) {
         String sql = "DELETE FROM salas WHERE id = ? ";
         try {
             con = cn.getConnection();
@@ -81,17 +92,13 @@ public class SalasDAO implements ISalasDAO{
         } catch (SQLException e) {
             System.out.println(e.toString());
             return false;
-        }finally{
-            try {
-                con.close();
-            } catch (SQLException e) {
-                System.out.println(e.toString());
-            }
+        } finally {
+            cerrarRecursos();
         }
     }
-    
+
     @Override
-    public boolean Modificar(SalasDTO sl){
+    public boolean Modificar(SalasDTO sl) {
         String sql = "UPDATE salas SET nombre=?, mesas=? WHERE id=?";
         try {
             con = cn.getConnection();
@@ -104,13 +111,27 @@ public class SalasDAO implements ISalasDAO{
         } catch (SQLException e) {
             System.out.println(e.toString());
             return false;
-        }finally{
-            try {
-                con.close();
-            } catch (SQLException e) {
-                System.out.println(e.toString());
-            }
+        } finally {
+           cerrarRecursos();
         }
     }
+
     
+    
+    
+    private void cerrarRecursos() {
+        try {
+            if (rs != null) {
+                rs.close();
+            }
+            if (ps != null) {
+                ps.close();
+            }
+            if (con != null) {
+                con.close();
+            }
+        } catch (SQLException e) {
+            System.out.println("Error al cerrar recursos: " + e.getMessage());
+        }
+    }
 }

@@ -21,10 +21,25 @@ import java.util.List;
 public class PlatosDAO implements IPlatosDAO{
     
     
-    Connection con;
-    Conexion cn = new Conexion();
-    PreparedStatement ps;
-    ResultSet rs;
+    private Connection con;
+    private PreparedStatement ps;
+    private ResultSet rs;
+    private Conexion cn = Conexion.obtenerInstancia();
+    
+    private static PlatosDAO instance;
+
+    // Constructor privado para evitar la instanciación directa
+    private PlatosDAO() {}
+
+    // Método estático para obtener la instancia única de PlatosDAO
+    public static PlatosDAO getInstance() {
+        if (instance == null) {
+            instance = new PlatosDAO();
+        }
+        return instance;
+    }
+    
+    
 
     @Override
     public boolean Registrar(PlatosDTO pla) {

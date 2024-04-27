@@ -4,7 +4,9 @@
  */
 package Prueba;
 
+import Control.LoginControl;
 import GUI.frmLogin;
+
 
 /**
  *
@@ -16,12 +18,11 @@ public class Prueba {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        
-        
-        frmLogin iniciar = new frmLogin();
-        iniciar.setVisible(true);
-        
-        
+
+        LoginControl loginControl = new LoginControl(); // Ajusta según sea necesario
+
+        new frmLogin(loginControl).setVisible(true);
+
     }
-    
+
 }

@@ -40,11 +40,28 @@ import javax.swing.filechooser.FileSystemView;
  */
 public class PedidosDAO implements IPedidosDAO {
 
-    Connection con;
-    Conexion cn = new Conexion();
-    PreparedStatement ps;
-    ResultSet rs;
+    private Connection con;
+    private PreparedStatement ps;
+    private ResultSet rs;
+    private Conexion cn = Conexion.obtenerInstancia();
     int r;
+    
+    
+    private static PedidosDAO instance;
+
+    // Constructor privado para evitar la instanciación directa
+    private PedidosDAO() {}
+
+    // Método estático para obtener la instancia única de PlatosDAO
+    public static PedidosDAO getInstance() {
+        if (instance == null) {
+            instance = new PedidosDAO();
+        }
+        return instance;
+    }
+    
+    
+    
 
     @Override
     public int IdPedido() {
