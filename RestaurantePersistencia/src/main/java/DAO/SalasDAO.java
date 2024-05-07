@@ -4,15 +4,18 @@
  */
 package DAO;
 
-import Conexion.Conexion;
+import Conexion.IConexionBD;
 import DTO.SalasDTO;
+
+import EntidadesJPA.Sala;
 import Interfaces.ISalasDAO;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import Persistencia.PersistenciaException;
+
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.persistence.TypedQuery;
 
 /**
  *
@@ -20,118 +23,231 @@ import java.util.List;
  */
 public class SalasDAO implements ISalasDAO {
 
-    
-    private static final SalasDAO instance = new SalasDAO();
-    
-    
-    private Connection con;
-    private PreparedStatement ps;
-    private ResultSet rs;
-    private Conexion cn = Conexion.obtenerInstancia();
-    
-    
-    private SalasDAO() {
+    private IConexionBD conexion;
+    private static SalasDAO instance;
+
+    public SalasDAO(IConexionBD conexion) {
+        this.conexion = conexion;
     }
 
-    // Método estático para obtener la instancia Singleton
-    public static SalasDAO getInstance() {
+    // Método para obtener una instancia única de LoginDAO
+    public static SalasDAO getInstance(IConexionBD conexion) {
+        if (instance == null) {
+            instance = new SalasDAO(conexion);
+        }
         return instance;
     }
-    
-    
 
     @Override
-    public boolean RegistrarSala(SalasDTO sl) {
-        String sql = "INSERT INTO salas(nombre, mesas) VALUES (?,?)";
+    public boolean RegistrarSala(Sala sl) throws PersistenciaException {
+        EntityManager entityManager = conexion.conexion();
+        EntityTransaction transaction = null;
         try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            ps.setString(1, sl.getNombre());
-            ps.setInt(2, sl.getMesas());
-            ps.execute();
+            // Obtener el EntityManager
+
+            // Iniciar una transacción
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+
+            // Persistir la sala en la base de datos
+            entityManager.persist(sl);
+
+            // Confirmar la transacción
+            transaction.commit();
+
             return true;
-        } catch (SQLException e) {
-            System.out.println(e.toString());
+        } catch (Exception e) {
+            // Si ocurre algún error, realizar un rollback de la transacción
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            System.out.println("Error al registrar la sala: " + e.getMessage());
             return false;
         } finally {
-            cerrarRecursos();
+            // Cerrar el EntityManager
+            if (entityManager != null) {
+                entityManager.close();
+            }
         }
     }
 
     @Override
-    public List Listar() {
-        List<SalasDTO> Lista = new ArrayList();
-        String sql = "SELECT * FROM salas";
+    public List Listar() throws PersistenciaException {
+        EntityManager entityManager = conexion.conexion();
         try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            rs = ps.executeQuery();
-            while (rs.next()) {
+            // Obtener el EntityManager
+
+            // Construir la consulta JPQL
+            String jpql = "SELECT s FROM Sala s";
+
+            // Crear la consulta con TypedQuery
+            TypedQuery<Sala> query = entityManager.createQuery(jpql, Sala.class);
+
+            // Obtener la lista de salas
+            List<Sala> salas = query.getResultList();
+
+            // Convertir las entidades Sala a DTO SalasDTO
+            List<SalasDTO> listaSalasDTO = new ArrayList<>();
+            for (Sala sala : salas) {
                 SalasDTO sl = new SalasDTO();
-                sl.setId(rs.getInt("id"));
-                sl.setNombre(rs.getString("nombre"));
-                sl.setMesas(rs.getInt("mesas"));
-                Lista.add(sl);
+                sl.setId((int) sala.getId());
+                sl.setNombre(sala.getNombre());
+                sl.setMesas(sala.getMesas());
+                listaSalasDTO.add(sl);
             }
 
-        } catch (SQLException e) {
-            System.out.println(e.toString());
-        }
-        return Lista;
-    }
-
-    @Override
-    public boolean Eliminar(int id) {
-        String sql = "DELETE FROM salas WHERE id = ? ";
-        try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            ps.setInt(1, id);
-            ps.execute();
-            return true;
-        } catch (SQLException e) {
-            System.out.println(e.toString());
-            return false;
+            return listaSalasDTO;
+        } catch (Exception e) {
+            System.out.println("Error al listar las salas: " + e.getMessage());
+            return null;
         } finally {
-            cerrarRecursos();
+            // Cerrar el EntityManager
+            if (entityManager != null) {
+                entityManager.close();
+            }
         }
     }
 
     @Override
-    public boolean Modificar(SalasDTO sl) {
-        String sql = "UPDATE salas SET nombre=?, mesas=? WHERE id=?";
+    public boolean Eliminar(int id) throws PersistenciaException {
+        EntityManager entityManager = conexion.conexion();
+        EntityTransaction transaction = null;
         try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            ps.setString(1, sl.getNombre());
-            ps.setInt(2, sl.getMesas());
-            ps.setInt(3, sl.getId());
-            ps.execute();
-            return true;
-        } catch (SQLException e) {
-            System.out.println(e.toString());
+            // Obtener el EntityManager
+
+            // Iniciar la transacción
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+
+            // Encontrar la sala a eliminar
+            Sala sala = entityManager.find(Sala.class, id);
+
+            // Verificar si la sala existe
+            if (sala != null) {
+                // Eliminar la sala
+                entityManager.remove(sala);
+
+                // Confirmar la transacción
+                transaction.commit();
+                return true;
+            } else {
+                System.out.println("La sala con ID " + id + " no existe.");
+                return false;
+            }
+        } catch (Exception e) {
+            if (transaction != null) {
+                // Revertir la transacción si hay errores
+                transaction.rollback();
+            }
+            System.out.println("Error al eliminar la sala: " + e.getMessage());
             return false;
         } finally {
-           cerrarRecursos();
+            // Cerrar el EntityManager
+            if (entityManager != null) {
+                entityManager.close();
+            }
         }
     }
 
-    
-    
-    
-    private void cerrarRecursos() {
+    @Override
+    public boolean Modificar(Sala sl) throws PersistenciaException {
+        EntityManager entityManager = conexion.conexion();
+        EntityTransaction transaction = null;
         try {
-            if (rs != null) {
-                rs.close();
+            // Obtener el EntityManager
+
+            // Iniciar la transacción
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+
+            // Encontrar la sala a modificar
+            Sala sala = entityManager.find(Sala.class, sl.getId());
+
+            // Verificar si la sala existe
+            if (sala != null) {
+                // Actualizar los atributos de la sala
+                sala.setNombre(sl.getNombre());
+                sala.setMesas(sl.getMesas());
+
+                // Confirmar la transacción
+                transaction.commit();
+                return true;
+            } else {
+                System.out.println("La sala con ID " + sl.getId() + " no existe.");
+                return false;
             }
-            if (ps != null) {
-                ps.close();
+        } catch (Exception e) {
+            if (transaction != null) {
+                // Revertir la transacción si hay errores
+                transaction.rollback();
             }
-            if (con != null) {
-                con.close();
+            System.out.println("Error al modificar la sala: " + e.getMessage());
+            return false;
+        } finally {
+            // Cerrar el EntityManager
+            if (entityManager != null) {
+                entityManager.close();
             }
-        } catch (SQLException e) {
-            System.out.println("Error al cerrar recursos: " + e.getMessage());
         }
     }
+
+    @Override
+    public Sala obtenerSalaPorId(int idSala) throws PersistenciaException {
+        EntityManager entityManager = conexion.conexion();
+
+        try {
+            // Obtener el EntityManager
+
+            // Buscar la Sala por su ID
+            return entityManager.find(Sala.class, idSala);
+        } catch (Exception e) {
+            System.out.println("Error al obtener la Sala por ID: " + e.getMessage());
+            return null;
+        } finally {
+            // Cerrar el EntityManager
+            if (entityManager != null) {
+                entityManager.close();
+            }
+        }
+    }
+
+    @Override
+    public Sala obtenerSalaPorNombre(String nombreSala) throws PersistenciaException {
+EntityManager entityManager = null;
+    try {
+        // Obtener el EntityManager
+        entityManager = conexion.conexion();
+
+        // Consulta JPQL para obtener la sala por su nombre
+        String jpql = "SELECT s FROM Sala s WHERE s.nombre = :nombre";
+
+        // Crear la TypedQuery con la consulta JPQL
+        TypedQuery<Sala> query = entityManager.createQuery(jpql, Sala.class);
+
+        // Asignar el parámetro
+        query.setParameter("nombre", nombreSala);
+
+        // Ejecutar la consulta y obtener el resultado
+        List<Sala> resultados = query.getResultList();
+
+        // Verificar si se encontraron resultados
+        if (!resultados.isEmpty()) {
+            // Devolver la primera sala encontrada (suponiendo que no debería haber duplicados)
+            return resultados.get(0);
+        } else {
+            // Si no se encontraron salas con ese nombre, devolver null
+            return null;
+        }
+    } catch (Exception e) {
+        // Manejar cualquier excepción y registrarla si es necesario
+        throw new PersistenciaException("Error al obtener la sala por nombre: " + e.getMessage(), e);
+    } finally {
+        // Cerrar el EntityManager
+        if (entityManager != null) {
+            entityManager.close();
+        }
+    }    }
+    
+    
+
 }

@@ -4,9 +4,10 @@
  */
 package Prueba;
 
-import Control.LoginControl;
+import Control.Convertidor;
+import Control.Factory;
 import GUI.frmLogin;
-
+import Interfaces.IUsuarioDAO;
 
 /**
  *
@@ -19,9 +20,9 @@ public class Prueba {
      */
     public static void main(String[] args) {
 
-        LoginControl loginControl = new LoginControl(); // Ajusta según sea necesario
-
-        new frmLogin(loginControl).setVisible(true);
+        IUsuarioDAO loginControl = Factory.getUsuarioDAO();
+        Convertidor convertir = new Convertidor(); // Asume que el constructor no requiere argumentos
+        new frmLogin(loginControl, convertir).setVisible(true);
 
     }
 

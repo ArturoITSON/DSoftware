@@ -4,7 +4,7 @@
  */
 package Interfaces;
 
-import DTO.PlatosDTO;
+import EntidadesJPA.Plato;
 import Persistencia.PersistenciaException;
 import java.util.List;
 
@@ -14,12 +14,12 @@ import java.util.List;
  */
 public interface IPlatosDAO {
 
-    public boolean Registrar(PlatosDTO pla) throws PersistenciaException;
+    public boolean Registrar(Plato pla) throws PersistenciaException;
 
     public List Listar(String valor, String fecha) throws PersistenciaException;
 
     public boolean Eliminar(int id) throws PersistenciaException;
 
-    public boolean Modificar(PlatosDTO pla) throws PersistenciaException;
+    public boolean Modificar(Plato pla) throws PersistenciaException;
 
 }

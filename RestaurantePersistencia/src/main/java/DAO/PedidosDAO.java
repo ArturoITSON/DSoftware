@@ -5,9 +5,13 @@
 package DAO;
 
 import Conexion.Conexion;
+import Conexion.IConexionBD;
 import DTO.DetallePedidoDTO;
 import DTO.PedidosDTO;
+import EntidadesJPA.DetallePedido;
+import EntidadesJPA.Pedido;
 import Interfaces.IPedidosDAO;
+import Persistencia.PersistenciaException;
 import com.itextpdf.text.BaseColor;
 import com.itextpdf.text.Chunk;
 import com.itextpdf.text.Document;
@@ -32,6 +36,11 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+
+import javax.persistence.PersistenceException;
+import javax.persistence.TypedQuery;
 import javax.swing.filechooser.FileSystemView;
 
 /**
@@ -40,41 +49,36 @@ import javax.swing.filechooser.FileSystemView;
  */
 public class PedidosDAO implements IPedidosDAO {
 
-    private Connection con;
-    private PreparedStatement ps;
-    private ResultSet rs;
-    private Conexion cn = Conexion.obtenerInstancia();
-    int r;
-    
-    
+    private IConexionBD conexion;
     private static PedidosDAO instance;
 
-    // Constructor privado para evitar la instanciación directa
-    private PedidosDAO() {}
+    // Constructor público que recibe la conexión como parámetro
+    public PedidosDAO(IConexionBD conexion) {
+        this.conexion = conexion;
+    }
 
-    // Método estático para obtener la instancia única de PlatosDAO
-    public static PedidosDAO getInstance() {
+    // Método para obtener una instancia única de LoginDAO
+    public static PedidosDAO getInstance(IConexionBD conexion) {
         if (instance == null) {
-            instance = new PedidosDAO();
+            instance = new PedidosDAO(conexion);
         }
         return instance;
     }
-    
-    
-    
 
     @Override
     public int IdPedido() {
         int id = 0;
-        String sql = "SELECT MAX(id) FROM pedidos";
+        String jpql = "SELECT MAX(p.id) FROM Pedido p";
         try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                id = rs.getInt(1);
-            }
-        } catch (SQLException e) {
+            // Obtenemos el EntityManager
+            EntityManager entityManager = conexion.conexion();
+
+            // Creación de la consulta con TypedQuery
+            TypedQuery<Integer> query = entityManager.createQuery(jpql, Integer.class);
+
+            // Obtención del resultado
+            id = query.getSingleResult();
+        } catch (Exception e) {
             System.out.println(e.toString());
         }
         return id;
@@ -83,350 +87,336 @@ public class PedidosDAO implements IPedidosDAO {
     @Override
     public int verificarEstado(int mesa, int id_sala) {
         int id_pedido = 0;
-        String sql = "SELECT id FROM pedidos WHERE num_mesa=? AND id_sala=? AND estado = ?";
+        String jpql = "SELECT p.id FROM Pedido p WHERE p.numMesa = :mesa AND p.sala.id = :id_sala AND p.estado = :estado";
         try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            ps.setInt(1, mesa);
-            ps.setInt(2, id_sala);
-            ps.setString(3, "PENDIENTE");
-            rs = ps.executeQuery();
-            if (rs.next()) {
-                id_pedido = rs.getInt("id");
-            }
-        } catch (SQLException e) {
+            // Obtenemos el EntityManager
+            EntityManager entityManager = conexion.conexion();
+
+            // Creación de la consulta con TypedQuery
+            TypedQuery<Integer> query = entityManager.createQuery(jpql, Integer.class);
+
+            // Asignación de parámetros
+            query.setParameter("mesa", mesa);
+            query.setParameter("id_sala", id_sala);
+            query.setParameter("estado", "PENDIENTE");
+
+            // Obtención del resultado
+            id_pedido = query.getSingleResult();
+        } catch (Exception e) {
             System.out.println(e.toString());
         }
         return id_pedido;
     }
 
     @Override
-    public int RegistrarPedido(PedidosDTO ped) {
-        String sql = "INSERT INTO pedidos (id_sala, num_mesa, total, usuario) VALUES (?,?,?,?)";
+    public int RegistrarPedido(Pedido ped) throws PersistenciaException {
+        EntityManager entityManager = null;
+        EntityTransaction transaction = null;
+        int idGenerado = 0;
+
         try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            ps.setInt(1, ped.getId_sala());
-            ps.setInt(2, ped.getNum_mesa());
-            ps.setDouble(3, ped.getTotal());
-            ps.setString(4, ped.getUsuario());
-            ps.execute();
-        } catch (SQLException e) {
-            System.out.println(e.toString());
+            entityManager = conexion.conexion();
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+
+            entityManager.persist(ped);
+            entityManager.flush();
+            idGenerado = (int) ped.getId(); // El ID se generará automáticamente por la base de datos
+
+            transaction.commit();
+        } catch (PersistenceException e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new PersistenciaException("Error al registrar el pedido", e);
         } finally {
-            try {
-                con.close();
-            } catch (SQLException e) {
-                System.out.println(e.toString());
+            if (entityManager != null) {
+                entityManager.close();
             }
         }
-        return r;
+        return idGenerado;
     }
 
     @Override
-    public int RegistrarDetalle(DetallePedidoDTO det) {
-        String sql = "INSERT INTO detalle_pedidos (nombre, precio, cantidad, comentario, id_pedido) VALUES (?,?,?,?,?)";
+    public int RegistrarDetalle(DetallePedido det) throws PersistenciaException {
+        int idGenerado = 0; // Cambiar el tipo de dato a int
+
+        EntityManager entityManager = null;
+        EntityTransaction transaction = null;
+
         try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            ps.setString(1, det.getNombre());
-            ps.setDouble(2, det.getPrecio());
-            ps.setInt(3, det.getCantidad());
-            ps.setString(4, det.getComentario());
-            ps.setInt(5, det.getId_pedido());
-            ps.execute();
-        } catch (SQLException e) {
-            System.out.println(e.toString());
+            entityManager = conexion.conexion();
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+
+            Pedido pedido = entityManager.find(Pedido.class, det.getId());
+            if (pedido != null) {
+                DetallePedido detallePedido = new DetallePedido();
+                detallePedido.setNombre(det.getNombre());
+                detallePedido.setPrecio(det.getPrecio());
+                detallePedido.setCantidad(det.getCantidad());
+                detallePedido.setComentario(det.getComentario());
+                detallePedido.setPedido(pedido);
+
+                entityManager.persist(detallePedido);
+                entityManager.flush();
+                idGenerado = (int) detallePedido.getId(); // El ID se generará automáticamente por la base de datos
+
+                transaction.commit();
+            } else {
+                throw new PersistenciaException("No se encontró el pedido con el ID proporcionado.");
+            }
+        } catch (PersistenceException e) {
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            throw new PersistenciaException("Error al registrar el detalle del pedido", e);
+        } finally {
+            if (entityManager != null) {
+                entityManager.close();
+            }
         }
-        return r;
+        return idGenerado;
     }
 
     @Override
-    public List verPedidoDetalle(int id_pedido) {
-        List<DetallePedidoDTO> Lista = new ArrayList();
-        String sql = "SELECT d.* FROM pedidos p INNER JOIN detalle_pedidos d ON p.id = d.id_pedido WHERE p.id = ?";
+    public List verPedidoDetalle(int id_pedido) throws PersistenciaException {
+        List<DetallePedidoDTO> listaDetalles = new ArrayList<>();
         try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            ps.setInt(1, id_pedido);
-            rs = ps.executeQuery();
-            while (rs.next()) {
+            EntityManager entityManager = conexion.conexion();
+            String jpql = "SELECT d FROM DetallePedido d WHERE d.pedido.id = :id_pedido";
+            TypedQuery<DetallePedido> query = entityManager.createQuery(jpql, DetallePedido.class);
+            query.setParameter("id_pedido", id_pedido);
+            List<DetallePedido> detalles = query.getResultList();
+            for (DetallePedido detalle : detalles) {
                 DetallePedidoDTO det = new DetallePedidoDTO();
-                det.setId(rs.getInt("id"));
-                det.setNombre(rs.getString("nombre"));
-                det.setPrecio(rs.getDouble("precio"));
-                det.setCantidad(rs.getInt("cantidad"));
-                det.setComentario(rs.getString("comentario"));
-                Lista.add(det);
+                det.setId((int) detalle.getId());
+                det.setNombre(detalle.getNombre());
+                det.setPrecio(detalle.getPrecio());
+                det.setCantidad(detalle.getCantidad());
+                det.setComentario(detalle.getComentario());
+                listaDetalles.add(det);
             }
-        } catch (SQLException e) {
-            System.out.println(e.toString());
+        } catch (Exception e) {
+            throw new PersistenciaException("Error al listar los detalles del pedido", e);
         }
-        return Lista;
+        return listaDetalles;
+
     }
 
     @Override
-    public PedidosDTO verPedido(int id_pedido) {
-        PedidosDTO ped = new PedidosDTO();
-        String sql = "SELECT p.*, s.nombre FROM pedidos p INNER JOIN salas s ON p.id_sala = s.id WHERE p.id = ?";
+    public Pedido verPedido(int idPedido) throws PersistenciaException {
+        Pedido pedido;
         try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            ps.setInt(1, id_pedido);
-            rs = ps.executeQuery();
-            if (rs.next()) {
-
-                ped.setId(rs.getInt("id"));
-                ped.setFecha(rs.getString("fecha"));
-                ped.setSala(rs.getString("nombre"));
-                ped.setNum_mesa(rs.getInt("num_mesa"));
-                ped.setTotal(rs.getDouble("total"));
-            }
-        } catch (SQLException e) {
-            System.out.println(e.toString());
+            EntityManager entityManager = conexion.conexion();
+            String jpql = "SELECT p FROM Pedido p JOIN FETCH p.sala s WHERE p.id = :idPedido";
+            TypedQuery<Pedido> query = entityManager.createQuery(jpql, Pedido.class);
+            query.setParameter("idPedido", idPedido);
+            pedido = query.getSingleResult();
+        } catch (Exception e) {
+            throw new PersistenciaException("Error al obtener el pedido", e);
         }
-        return ped;
+        return pedido;
     }
 
     @Override
-    public List finalizarPedido(int id_pedido) {
-        List<DetallePedidoDTO> Lista = new ArrayList();
-        String sql = "SELECT d.* FROM pedidos p INNER JOIN detalle_pedidos d ON p.id = d.id_pedido WHERE p.id = ?";
+    public List finalizarPedido(int idPedido) {
+        List<DetallePedido> lista = new ArrayList<>();
         try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            ps.setInt(1, id_pedido);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                DetallePedidoDTO det = new DetallePedidoDTO();
-                det.setId(rs.getInt("id"));
-                det.setNombre(rs.getString("nombre"));
-                det.setPrecio(rs.getDouble("precio"));
-                det.setCantidad(rs.getInt("cantidad"));
-                det.setComentario(rs.getString("comentario"));
-                Lista.add(det);
-            }
-        } catch (SQLException e) {
-            System.out.println(e.toString());
+            // Obtenemos el EntityManager
+            EntityManager entityManager = conexion.conexion();
+
+            // Consulta JPQL para obtener los detalles del pedido específico
+            String jpql = "SELECT d FROM DetallePedido d WHERE d.pedido.id = :idPedido";
+
+            // Creamos la TypedQuery con la consulta JPQL
+            TypedQuery<DetallePedido> query = entityManager.createQuery(jpql, DetallePedido.class);
+
+            // Asignamos el parámetro
+            query.setParameter("idPedido", idPedido);
+
+            // Obtenemos el resultado
+            lista = query.getResultList();
+        } catch (Exception e) {
+            System.out.println("Errorcito" + e);
         }
-        return Lista;
+        return lista;
     }
 
     @Override
-    public void pdfPedido(int id_pedido) throws DocumentException {
-       Connection con = null;
-        PreparedStatement ps = null;
-        ResultSet rs = null;
-        
-        String fechaPedido = null, usuario = null, total = null, sala = null, num_mesa = null;
-        
+    public void pdfPedido(int idPedido) throws DocumentException {
         try {
-            // Establecer conexión y crear el archivo PDF
-            con = cn.getConnection();
-            FileOutputStream archivo;
+            // Obtener el EntityManager
+            EntityManager entityManager = conexion.conexion();
+
+            // Consulta JPQL para obtener la información del pedido
+            String jpql = "SELECT p, s.nombre FROM Pedido p JOIN p.sala s WHERE p.id = :idPedido";
+
+            // Crear la TypedQuery con la consulta JPQL
+            TypedQuery<Object[]> query = entityManager.createQuery(jpql, Object[].class);
+
+            // Asignar el parámetro
+            query.setParameter("idPedido", idPedido);
+
+            // Obtener el resultado
+            Object[] result = query.getSingleResult();
+
+            // Extraer la información del resultado
+            Pedido pedido = (Pedido) result[0];
+            String nombreSala = (String) result[1];
+            String fechaPedido = pedido.getFecha().toString();
+            String usuario = pedido.getUsuario();
+            String total = String.valueOf(pedido.getTotal());
+
+            // Crear el archivo PDF
             String url = FileSystemView.getFileSystemView().getDefaultDirectory().getPath();
             File salida = new File(url + File.separator + "pedido.pdf");
-            archivo = new FileOutputStream(salida);
+            FileOutputStream archivo = new FileOutputStream(salida);
             Document doc = new Document();
             PdfWriter.getInstance(doc, archivo);
             doc.open();
+
+            // Agregar información del restaurante
+            agregarInformacionRestaurante(doc);
+
+            // Agregar espacio antes de la tabla
+            doc.add(Chunk.NEWLINE);
+
+            // Agregar contenido al PDF
+            PdfPTable tabla = new PdfPTable(2);
+            tabla.setWidthPercentage(100);
+            tabla.addCell("Fecha: " + fechaPedido);
+            tabla.addCell("Atendido por: " + usuario);
+            tabla.addCell("Sala: " + nombreSala);
+            tabla.addCell("Total: " + total);
             
-            // Obtener información del pedido
-            String informacion = "SELECT p.*, s.nombre FROM pedidos p INNER JOIN salas s ON p.id_sala = s.id WHERE p.id = ?";
-            try {
-                ps = con.prepareStatement(informacion);
-                ps.setInt(1, id_pedido);
-                rs = ps.executeQuery();
-                if (rs.next()) {
-                    num_mesa = rs.getString("num_mesa");
-                    sala = rs.getString("nombre");
-                    fechaPedido = rs.getString("fecha");
-                    usuario = rs.getString("usuario");
-                    total = rs.getString("total");
-                }
-            } catch (SQLException e) {
-                System.out.println("Error al obtener información del pedido: " + e.toString());
-            }
+
+            // Agregar la tabla al documento
+            doc.add(tabla);
             
-            // Crear tabla para el encabezado
-            PdfPTable Encabezado = new PdfPTable(4);
-            Encabezado.setWidthPercentage(100);
-            Encabezado.getDefaultCell().setBorder(0);
-            float[] columnWidthsEncabezado = new float[]{20f, 20f, 60f, 60f};
-            Encabezado.setWidths(columnWidthsEncabezado);
-            
-            
-            // Agregar contenido al encabezado
-            Encabezado.addCell(""); // Celda vacía
-            // Agregar información de la empresa
-            String config = "SELECT * FROM config";
-            String mensaje = "";
-            try {
-                con = cn.getConnection();
-                ps = con.prepareStatement(config);
-                rs = ps.executeQuery();
-                if (rs.next()) {
-                    mensaje = rs.getString("mensaje");
-                    Encabezado.addCell("Ruc:    " + rs.getString("ruc") 
-                            + "\nNombre: " + rs.getString("nombre") 
-                            + "\nTeléfono: " + rs.getString("telefono") 
-                            + "\nDirección: " + rs.getString("direccion")
-                    );
-                }
-            } catch (SQLException e) {
-                System.out.println(e.toString());
-            }
-            //
-            Paragraph info = new Paragraph();
-            
-            Font negrita = new Font(Font.FontFamily.TIMES_ROMAN, 12, Font.BOLD, BaseColor.BLUE);
-            info.add("Atendido: " + usuario 
-                    + "\nN° Pedido: " + id_pedido + "                                                                          " + "Ruc:    " + rs.getString("ruc") 
-                    + "\nFecha: " + fechaPedido   + "                                                   " + "Nombre: " + rs.getString("nombre")
-                    + "\nSala: " + sala           + "                                                                         " + "Teléfono: " + rs.getString("telefono") 
-                    + "\nN° Mesa: " + num_mesa    + "                                                                              " + "Dirección: " + rs.getString("direccion")
-                    + "\n "
-                    + "\n "
-                    
-                             
-                            
-                            
-            );
-            Encabezado.setHorizontalAlignment(Element.ALIGN_RIGHT);
-            Encabezado.addCell(info);
-            
-            // Añadir tablas y párrafos al documento
-            try {
-                doc.add(Encabezado);
-                doc.add(info);
-                // Añadir tabla de productos
-                PdfPTable tabla = new PdfPTable(4);
-                tabla.setWidthPercentage(100);
-                tabla.getDefaultCell().setBorder(0);
-                float[] columnWidths = new float[]{10f, 50f, 15f, 15f};
-                tabla.setWidths(columnWidths);
-                tabla.setHorizontalAlignment(Element.ALIGN_LEFT);
-                // Celdas con texto en negrita
-                PdfPCell c1 = new PdfPCell(new Phrase("Cant.", FontFactory.getFont(FontFactory.TIMES_ROMAN, 12, Font.BOLD)));
-                PdfPCell c2 = new PdfPCell(new Phrase("Plato.", FontFactory.getFont(FontFactory.TIMES_ROMAN, 12, Font.BOLD)));
-                PdfPCell c3 = new PdfPCell(new Phrase("P. unt.", FontFactory.getFont(FontFactory.TIMES_ROMAN, 12, Font.BOLD)));
-                PdfPCell c4 = new PdfPCell(new Phrase("P. Total", FontFactory.getFont(FontFactory.TIMES_ROMAN, 12, Font.BOLD)));
-                // Configurar celdas
-                c1.setBorder(Rectangle.NO_BORDER);
-                c2.setBorder(Rectangle.NO_BORDER);
-                c3.setBorder(Rectangle.NO_BORDER);
-                c4.setBorder(Rectangle.NO_BORDER);
-                c1.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                c2.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                c3.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                c4.setBackgroundColor(BaseColor.LIGHT_GRAY);
-                tabla.addCell(c1);
-                tabla.addCell(c2);
-                tabla.addCell(c3);
-                tabla.addCell(c4);
-                // Consultar productos del pedido
-                String productQuery = "SELECT d.* FROM pedidos p INNER JOIN detalle_pedidos d ON p.id = d.id_pedido WHERE p.id = ?";
-                ps = con.prepareStatement(productQuery);
-                ps.setInt(1, id_pedido);
-                rs = ps.executeQuery();
-                while (rs.next()) {
-                    double subTotal = rs.getInt("cantidad") * rs.getDouble("precio");
-                    tabla.addCell(rs.getString("cantidad"));
-                    tabla.addCell(rs.getString("nombre"));
-                    tabla.addCell(rs.getString("precio"));
-                    tabla.addCell(String.valueOf(subTotal));
-                }
-                doc.add(tabla); // Agregar tabla de productos al documento
-                
-                // Párrafo con el total
-                Paragraph totalParrafo = new Paragraph();
-                totalParrafo.add(Chunk.NEWLINE);
-                totalParrafo.add("Total S/: " + total);
-                totalParrafo.setAlignment(Element.ALIGN_RIGHT);
-                doc.add(totalParrafo);
-                
-                // Párrafo para la firma y mensaje
-                Paragraph firma = new Paragraph();
-                firma.add(Chunk.NEWLINE);
-                firma.add("Cancelación \n\n");
-                firma.add("------------------------------------\n");
-                firma.add("Firma \n");
-                firma.setAlignment(Element.ALIGN_CENTER);
-                doc.add(firma);
-                
-                Paragraph mensajeParrafo = new Paragraph();
-                mensajeParrafo.add(Chunk.NEWLINE);
-                mensajeParrafo.add(mensaje);
-                mensajeParrafo.setAlignment(Element.ALIGN_CENTER);
-                doc.add(mensajeParrafo);
-                
-                // Cerrar el documento y abrir el archivo generado
-                doc.close();
-                archivo.close();
-                Desktop.getDesktop().open(salida);
-                
-            } catch (DocumentException | IOException e) {
-                System.out.println("Error al agregar contenido al PDF: " + e.toString());
-            }
-            
-        } catch (FileNotFoundException | SQLException e) {
-            System.out.println("Error al generar el PDF: " + e.toString());
-        } finally {
-            try {
-                if (con != null) {
-                    con.close();
-                }
-            } catch (SQLException e) {
-                System.out.println("Error al cerrar la conexión: " + e.toString());
-            }
+
+            // Cerrar el documento y abrir el archivo generado
+            doc.close();
+            archivo.close();
+            Desktop.getDesktop().open(salida);
+        } catch (DocumentException e) {
+            System.out.println("Pedido no encontrado: " + e.getMessage());
+        } catch (Exception e) {
+            System.out.println("Error al generar el PDF: " + e.getMessage());
         }
     }
+
+    private void agregarInformacionRestaurante(Document document) throws DocumentException {
+        // Agregar información del restaurante
+        Font fontTitulo = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 16, BaseColor.BLACK);
+        Font fontNormal = FontFactory.getFont(FontFactory.HELVETICA, 12, BaseColor.BLACK);
+
+        // Obtener la información del restaurante desde la base de datos
+        // Aquí debes obtener la información de la entidad Config y asignarla a las variables correspondientes
+        String ruc = "123456789";
+        String nombreRestaurante = "Restaurante CHALET";
+        String telefono = "1234567890";
+        String direccion = "Cd-Obregon";
+
+        // Crear título del restaurante
+        Paragraph tituloRestaurante = new Paragraph(nombreRestaurante, fontTitulo);
+        tituloRestaurante.setAlignment(Element.ALIGN_CENTER);
+        document.add(tituloRestaurante);
+
+        // Agregar espacio después del título
+        document.add(Chunk.NEWLINE);
+
+        // Crear tabla para la información del restaurante
+        PdfPTable tablaRestaurante = new PdfPTable(2);
+        tablaRestaurante.setWidthPercentage(100);
+
+        // Agregar filas con la información del restaurante
+        tablaRestaurante.addCell(new Phrase("RUC:", fontNormal));
+        tablaRestaurante.addCell(new Phrase(ruc, fontNormal));
+        tablaRestaurante.addCell(new Phrase("Teléfono:", fontNormal));
+        tablaRestaurante.addCell(new Phrase(telefono, fontNormal));
+        tablaRestaurante.addCell(new Phrase("Dirección:", fontNormal));
+        tablaRestaurante.addCell(new Phrase(direccion, fontNormal));
+
+        // Agregar la tabla al documento
+        document.add(tablaRestaurante);
+
+        // Agregar espacio después del mensaje
+        document.add(Chunk.NEWLINE);
+    }
     
-
-
-
-
+    
     
 
     @Override
-    public boolean actualizarEstado(int id_pedido) {
-        String sql = "UPDATE pedidos SET estado = ? WHERE id = ?";
+    public boolean actualizarEstado(int idPedido) throws PersistenciaException {
+
+        /// Obtener el EntityManager
+        EntityManager entityManager = conexion.conexion();
+
+        // Iniciar una transacción
+        EntityTransaction transaction = entityManager.getTransaction();
         try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            ps.setString(1, "FINALIZADO");
-            ps.setInt(2, id_pedido);
-            ps.execute();
+
+            transaction.begin();
+
+            // Obtener el pedido por su ID
+            Pedido pedido = entityManager.find(Pedido.class, idPedido);
+
+            // Verificar si se encontró el pedido
+            if (pedido == null) {
+                System.out.println("Pedido no encontrado.");
+                return false;
+            }
+
+            // Actualizar el estado del pedido a "FINALIZADO"
+            pedido.setEstado("FINALIZADO");
+
+            // Hacer commit de la transacción
+            transaction.commit();
+
             return true;
-        } catch (SQLException e) {
-            System.out.println(e.toString());
+        } catch (Exception e) {
+            // En caso de error, hacer rollback de la transacción
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            System.out.println("Error al actualizar el estado del pedido: " + e.getMessage());
             return false;
+        } finally {
+            // Cerrar el EntityManager
+            if (entityManager != null) {
+                entityManager.close();
+            }
         }
     }
 
     @Override
-    public List listarPedidos() {
-        List<PedidosDTO> Lista = new ArrayList();
-        String sql = "SELECT p.*, s.nombre FROM pedidos p INNER JOIN salas s ON p.id_sala = s.id ORDER BY p.fecha DESC";
+    public List listarPedidos() throws PersistenciaException {
+
+        // Obtener el EntityManager
+        EntityManager entityManager = conexion.conexion();
         try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                PedidosDTO ped = new PedidosDTO();
-                ped.setId(rs.getInt("id"));
-                ped.setSala(rs.getString("nombre"));
-                ped.setNum_mesa(rs.getInt("num_mesa"));
-                ped.setFecha(rs.getString("fecha"));
-                ped.setTotal(rs.getDouble("total"));
-                ped.setUsuario(rs.getString("usuario"));
-                ped.setEstado(rs.getString("estado"));
-                Lista.add(ped);
+
+            // Construir la consulta JPQL
+            String jpql = "SELECT p FROM Pedido p JOIN FETCH p.sala ORDER BY p.fecha DESC";
+
+            // Crear la consulta con TypedQuery
+            TypedQuery<Pedido> query = entityManager.createQuery(jpql, Pedido.class);
+
+            // Obtener la lista de pedidos
+            List<Pedido> pedidos = query.getResultList();
+
+            return pedidos;
+        } catch (Exception e) {
+            System.out.println("Error al listar los pedidos: " + e.getMessage());
+            return new ArrayList<>();
+        } finally {
+            // Cerrar el EntityManager
+            if (entityManager != null) {
+                entityManager.close();
             }
-        } catch (SQLException e) {
-            System.out.println(e.toString());
         }
-        return Lista;
     }
 
 }

@@ -4,6 +4,8 @@
  */
 package DTO;
 
+import java.sql.Timestamp;
+
 /**
  *
  * @author Carlo
@@ -14,7 +16,7 @@ public class PedidosDTO {
      private int id;
     private int id_sala;
     private int num_mesa;
-    private String fecha;
+    private Timestamp fecha;
     private double total;
     private String sala;
     private String usuario;
@@ -23,7 +25,7 @@ public class PedidosDTO {
     public PedidosDTO() {
     }
 
-    public PedidosDTO(int id, int id_sala, int num_mesa, String fecha, double total, String sala, String usuario, String estado) {
+    public PedidosDTO(int id, int id_sala, int num_mesa, Timestamp fecha, double total, String sala, String usuario, String estado) {
         this.id = id;
         this.id_sala = id_sala;
         this.num_mesa = num_mesa;
@@ -58,11 +60,11 @@ public class PedidosDTO {
         this.num_mesa = num_mesa;
     }
 
-    public String getFecha() {
+    public Timestamp getFecha() {
         return fecha;
     }
 
-    public void setFecha(String fecha) {
+    public void setFecha(Timestamp fecha) {
         this.fecha = fecha;
     }
 

@@ -1,10 +1,10 @@
 package GUI;
 
-import Control.LoginControl;
-import Control.PedidosControl;
-import Control.PlatosControl;
-import Control.SalasControl;
+import Control.Convertidor;
+import Control.Factory;
 import DTO.*;
+import EntidadesJPA.*;
+import Interfaces.*;
 import Persistencia.PersistenciaException;
 import com.itextpdf.text.DocumentException;
 import java.awt.*;
@@ -15,7 +15,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -32,17 +31,19 @@ import javax.swing.table.JTableHeader;
 public class Sistema extends javax.swing.JFrame {
 
     // ---VARIABLES--- //
-    private SalasControl salaControl = new SalasControl();
-    private PedidosControl pedidoControl = new PedidosControl();
-    private PlatosControl platoControl = new PlatosControl();
-    private LoginControl loginControl = new LoginControl();
+    private ISalasDAO salaControl = Factory.getSalDAO();
+    private IPedidosDAO pedidoControl = Factory.getPediDAO();
+    private IPlatosDAO platoControl = Factory.getPlatDAO();
+    private IUsuarioDAO loginControl = Factory.getUsuarioDAO();
 
-    private PlatosDTO pla = new PlatosDTO();
-    private SalasDTO sl = new SalasDTO();
-    private ConfigDTO conf = new ConfigDTO();
-    private EventosDTO event = new EventosDTO();
-    private PedidosDTO ped = new PedidosDTO();
-    private DetallePedidoDTO detPedido = new DetallePedidoDTO();
+    private PlatosDTO platosDto = new PlatosDTO();
+    private SalasDTO salasDto = new SalasDTO();
+    private ConfigDTO confDto = new ConfigDTO();
+    private EventosDTO eventoDto = new EventosDTO();
+    private PedidosDTO pedidoDto = new PedidosDTO();
+    private DetallePedidoDTO detallePedidoDto = new DetallePedidoDTO();
+
+    private Convertidor convertir = new Convertidor();
 
     private DefaultTableModel modelo = new DefaultTableModel();
     private DefaultTableModel tmp = new DefaultTableModel();
@@ -53,16 +54,17 @@ public class Sistema extends javax.swing.JFrame {
     private Date fechaActual = new Date();
     private String fechaFormato = new SimpleDateFormat("yyyy-MM-dd").format(fechaActual);
 
-    public Sistema(LoginDTO priv) throws PersistenciaException {
+    public Sistema(UsuarioDTO priv) throws PersistenciaException {
         initComponents();
         setLayout(new BorderLayout());
 
         txtIdHistorialPedido.setVisible(true);
         txtIdConfig.setVisible(true);
         if (priv.getRol().equals("Asistente")) {
-            btnSala.setEnabled(false);
-            btnConfig.setEnabled(false);
-            btnUsuarios.setEnabled(false);
+            btnPlatos.setVisible(false);
+            btnSala.setVisible(false);
+            btnConfig.setVisible(false);
+            btnUsuarios.setVisible(false);
             LabelVendedor.setText(priv.getNombre());
         } else {
             LabelVendedor.setText(priv.getNombre());
@@ -78,9 +80,6 @@ public class Sistema extends javax.swing.JFrame {
         jTabbedPane1.setTabLayoutPolicy(JTabbedPane.WRAP_TAB_LAYOUT);
         jTabbedPane1.setBorder(null);
 
-        
-        
-        
         panelSalas();
 
     }
@@ -104,7 +103,7 @@ public class Sistema extends javax.swing.JFrame {
         btnConfig = new javax.swing.JButton();
         btnUsuarios = new javax.swing.JButton();
         LabelVendedor = new javax.swing.JLabel();
-        labelLogo = new javax.swing.JLabel();
+        jButton1 = new javax.swing.JButton();
         jTabbedPane1 = new javax.swing.JTabbedPane();
         jPanel4 = new javax.swing.JPanel();
         jScrollPane1 = new javax.swing.JScrollPane();
@@ -293,15 +292,17 @@ public class Sistema extends javax.swing.JFrame {
             }
         });
 
+        LabelVendedor.setFont(new java.awt.Font("Arial", 1, 18)); // NOI18N
         LabelVendedor.setForeground(new java.awt.Color(0, 0, 0));
         LabelVendedor.setText("Administrador");
 
-        labelLogo.setBackground(new java.awt.Color(255, 255, 255));
-        labelLogo.setForeground(new java.awt.Color(0, 0, 0));
-        labelLogo.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/logo.png"))); // NOI18N
-        labelLogo.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseClicked(java.awt.event.MouseEvent evt) {
-                labelLogoMouseClicked(evt);
+        jButton1.setBackground(new java.awt.Color(153, 153, 153));
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/images/logo.png"))); // NOI18N
+        jButton1.setBorder(javax.swing.BorderFactory.createBevelBorder(javax.swing.border.BevelBorder.RAISED));
+        jButton1.setOpaque(true);
+        jButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                jButton1ActionPerformed(evt);
             }
         });
 
@@ -309,15 +310,6 @@ public class Sistema extends javax.swing.JFrame {
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(46, 46, 46)
-                        .addComponent(LabelVendedor))
-                    .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addGap(26, 26, 26)
-                        .addComponent(labelLogo, javax.swing.GroupLayout.PREFERRED_SIZE, 125, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -331,15 +323,21 @@ public class Sistema extends javax.swing.JFrame {
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel3Layout.createSequentialGroup()
                         .addComponent(btnConfig, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addContainerGap())))
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(24, 24, 24)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(LabelVendedor)
+                    .addComponent(jButton1))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(51, 51, 51)
-                .addComponent(labelLogo)
-                .addGap(38, 38, 38)
+                .addGap(48, 48, 48)
+                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 113, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(34, 34, 34)
                 .addComponent(LabelVendedor)
-                .addGap(75, 75, 75)
+                .addGap(59, 59, 59)
                 .addComponent(btnPlatos, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(btnSala, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -507,7 +505,7 @@ public class Sistema extends javax.swing.JFrame {
 
             },
             new String [] {
-                "ID", "NOMBRE", "Mesas"
+                "", "NOMBRE", "Mesas"
             }
         ));
         tableSala.setRowHeight(23);
@@ -518,9 +516,9 @@ public class Sistema extends javax.swing.JFrame {
         });
         jScrollPane3.setViewportView(tableSala);
         if (tableSala.getColumnModel().getColumnCount() > 0) {
-            tableSala.getColumnModel().getColumn(0).setMinWidth(30);
-            tableSala.getColumnModel().getColumn(0).setPreferredWidth(30);
-            tableSala.getColumnModel().getColumn(0).setMaxWidth(30);
+            tableSala.getColumnModel().getColumn(0).setMinWidth(1);
+            tableSala.getColumnModel().getColumn(0).setPreferredWidth(1);
+            tableSala.getColumnModel().getColumn(0).setMaxWidth(1);
             tableSala.getColumnModel().getColumn(2).setMinWidth(100);
             tableSala.getColumnModel().getColumn(2).setPreferredWidth(100);
             tableSala.getColumnModel().getColumn(2).setMaxWidth(100);
@@ -582,7 +580,7 @@ public class Sistema extends javax.swing.JFrame {
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                true, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -592,9 +590,9 @@ public class Sistema extends javax.swing.JFrame {
         tblTemPlatos.setRowHeight(23);
         jScrollPane14.setViewportView(tblTemPlatos);
         if (tblTemPlatos.getColumnModel().getColumnCount() > 0) {
-            tblTemPlatos.getColumnModel().getColumn(0).setMinWidth(30);
-            tblTemPlatos.getColumnModel().getColumn(0).setPreferredWidth(30);
-            tblTemPlatos.getColumnModel().getColumn(0).setMaxWidth(30);
+            tblTemPlatos.getColumnModel().getColumn(0).setMinWidth(1);
+            tblTemPlatos.getColumnModel().getColumn(0).setPreferredWidth(1);
+            tblTemPlatos.getColumnModel().getColumn(0).setMaxWidth(1);
             tblTemPlatos.getColumnModel().getColumn(2).setMinWidth(100);
             tblTemPlatos.getColumnModel().getColumn(2).setPreferredWidth(100);
             tblTemPlatos.getColumnModel().getColumn(2).setMaxWidth(100);
@@ -637,7 +635,7 @@ public class Sistema extends javax.swing.JFrame {
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, true
+                true, false, false, false, false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -647,9 +645,9 @@ public class Sistema extends javax.swing.JFrame {
         tableMenu.setRowHeight(23);
         jScrollPane11.setViewportView(tableMenu);
         if (tableMenu.getColumnModel().getColumnCount() > 0) {
-            tableMenu.getColumnModel().getColumn(0).setMinWidth(30);
-            tableMenu.getColumnModel().getColumn(0).setPreferredWidth(30);
-            tableMenu.getColumnModel().getColumn(0).setMaxWidth(30);
+            tableMenu.getColumnModel().getColumn(0).setMinWidth(1);
+            tableMenu.getColumnModel().getColumn(0).setPreferredWidth(1);
+            tableMenu.getColumnModel().getColumn(0).setMaxWidth(1);
         }
 
         jLabel5.setText("Comentario:");
@@ -818,9 +816,9 @@ public class Sistema extends javax.swing.JFrame {
         tableFinalizar.setRowHeight(23);
         jScrollPane13.setViewportView(tableFinalizar);
         if (tableFinalizar.getColumnModel().getColumnCount() > 0) {
-            tableFinalizar.getColumnModel().getColumn(0).setMinWidth(30);
-            tableFinalizar.getColumnModel().getColumn(0).setPreferredWidth(30);
-            tableFinalizar.getColumnModel().getColumn(0).setMaxWidth(30);
+            tableFinalizar.getColumnModel().getColumn(0).setMinWidth(1);
+            tableFinalizar.getColumnModel().getColumn(0).setPreferredWidth(1);
+            tableFinalizar.getColumnModel().getColumn(0).setMaxWidth(1);
         }
 
         jPanel9.add(jScrollPane13, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 10, 970, 316));
@@ -859,11 +857,11 @@ public class Sistema extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Id", "Sala", "Atendido", "N° Mesa", "Fecha", "Total", "Estado"
+                "", "Sala", "Atendido", "N° Mesa", "Fecha", "Total", "Estado"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false, false, false, false, true
+                true, false, false, false, false, false, true
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
@@ -878,6 +876,11 @@ public class Sistema extends javax.swing.JFrame {
             }
         });
         jScrollPane12.setViewportView(TablePedidos);
+        if (TablePedidos.getColumnModel().getColumnCount() > 0) {
+            TablePedidos.getColumnModel().getColumn(0).setMinWidth(1);
+            TablePedidos.getColumnModel().getColumn(0).setPreferredWidth(1);
+            TablePedidos.getColumnModel().getColumn(0).setMaxWidth(1);
+        }
 
         jPanel10.add(jScrollPane12, new org.netbeans.lib.awtextra.AbsoluteConstraints(30, 60, 970, 440));
 
@@ -1160,16 +1163,11 @@ public class Sistema extends javax.swing.JFrame {
 
             },
             new String [] {
-                "Id", "Nombre", "Usuario", "Rol"
+                "Nombre", "Usuario", "Rol"
             }
         ));
         TableUsuarios.setRowHeight(23);
         jScrollPane10.setViewportView(TableUsuarios);
-        if (TableUsuarios.getColumnModel().getColumnCount() > 0) {
-            TableUsuarios.getColumnModel().getColumn(0).setMinWidth(30);
-            TableUsuarios.getColumnModel().getColumn(0).setPreferredWidth(30);
-            TableUsuarios.getColumnModel().getColumn(0).setMaxWidth(30);
-        }
 
         javax.swing.GroupLayout jPanel12Layout = new javax.swing.GroupLayout(jPanel12);
         jPanel12.setLayout(jPanel12Layout);
@@ -1318,7 +1316,7 @@ public class Sistema extends javax.swing.JFrame {
 
             },
             new String [] {
-                "ID", "DESCRIPCIÓN", "PRECIO"
+                "", "DESCRIPCIÓN", "PRECIO"
             }
         ));
         TablePlatos.setRowHeight(23);
@@ -1329,9 +1327,9 @@ public class Sistema extends javax.swing.JFrame {
         });
         jScrollPane9.setViewportView(TablePlatos);
         if (TablePlatos.getColumnModel().getColumnCount() > 0) {
-            TablePlatos.getColumnModel().getColumn(0).setMinWidth(30);
-            TablePlatos.getColumnModel().getColumn(0).setPreferredWidth(30);
-            TablePlatos.getColumnModel().getColumn(0).setMaxWidth(30);
+            TablePlatos.getColumnModel().getColumn(0).setMinWidth(1);
+            TablePlatos.getColumnModel().getColumn(0).setPreferredWidth(1);
+            TablePlatos.getColumnModel().getColumn(0).setMaxWidth(1);
             TablePlatos.getColumnModel().getColumn(2).setMinWidth(100);
             TablePlatos.getColumnModel().getColumn(2).setPreferredWidth(100);
             TablePlatos.getColumnModel().getColumn(2).setMaxWidth(100);
@@ -1414,23 +1412,36 @@ public class Sistema extends javax.swing.JFrame {
     private void btnGuardarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGuardarActionPerformed
         // TODO add your handling code here:
 
-        if (!"".equals(txtNombrePlato.getText()) || !"".equals(txtPrecioPlato.getText())) {
-            pla.setNombre(txtNombrePlato.getText());
-            pla.setPrecio(Double.parseDouble(txtPrecioPlato.getText()));
-            pla.setFecha(fechaFormato);
+        // Verifica que los campos de nombre y precio no estén vacíos
+        if (!txtNombrePlato.getText().isEmpty() && !txtPrecioPlato.getText().isEmpty()) {
+            // Crea un objeto PlatosDTO y establece los valores del nombre y precio
+            PlatosDTO platoDTO = new PlatosDTO();
+            platoDTO.setNombre(txtNombrePlato.getText());
+            platoDTO.setPrecio(Double.parseDouble(txtPrecioPlato.getText()));
+
+            // Obtiene la fecha y hora actual como objeto Date
+            Date fechaActual = new Date();
+
+            // Establece la fecha en el DTO
+            platoDTO.setFecha(fechaActual);
+
             try {
-                if (platoControl.Registrar(pla)) {
+                // Convierte el DTO a una entidad Plato y lo registra en la base de datos
+                Plato plato = convertir.convertirPlatoDTOaEntidad(platoDTO);
+                if (platoControl.Registrar(plato)) {
+                    // Muestra un mensaje de éxito y realiza otras operaciones, como limpiar la tabla y los campos de entrada
                     JOptionPane.showMessageDialog(null, "Plato Registrado");
                     LimpiarTable();
                     ListarPlatos(TablePlatos);
                     LimpiarPlatos();
                 }
             } catch (PersistenciaException ex) {
-                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                // Maneja cualquier excepción de persistencia mostrando un mensaje de error
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrió un error", ex);
             }
-
         } else {
-            JOptionPane.showMessageDialog(null, "Los campos estan vacios");
+            // Si los campos de nombre o precio están vacíos, muestra un mensaje de advertencia
+            JOptionPane.showMessageDialog(null, "Los campos están vacíos");
         }
 
     }//GEN-LAST:event_btnGuardarActionPerformed
@@ -1439,21 +1450,24 @@ public class Sistema extends javax.swing.JFrame {
         // TODO add your handling code here:
 
         if ("".equals(txtIdPlato.getText())) {
-            JOptionPane.showMessageDialog(null, "Seleecione una fila");
+            JOptionPane.showMessageDialog(null, "Seleccione una fila");
         } else {
             if (!"".equals(txtNombrePlato.getText()) || !"".equals(txtPrecioPlato.getText())) {
-                pla.setNombre(txtNombrePlato.getText());
-                pla.setPrecio(Double.parseDouble(txtPrecioPlato.getText()));
-                pla.setId(Integer.parseInt(txtIdPlato.getText()));
+                PlatosDTO platoDTO = new PlatosDTO();
+                platoDTO.setId(Integer.parseInt(txtIdPlato.getText()));
+                platoDTO.setNombre(txtNombrePlato.getText());
+                platoDTO.setPrecio(Double.parseDouble(txtPrecioPlato.getText()));
+
                 try {
-                    if (platoControl.Modificar(pla)) {
+                    Plato plato = Convertidor.convertirPlatoDTOaEntidad(platoDTO);
+                    if (platoControl.Modificar(plato)) {
                         JOptionPane.showMessageDialog(null, "Plato Modificado");
                         LimpiarTable();
                         ListarPlatos(TablePlatos);
                         LimpiarPlatos();
                     }
                 } catch (PersistenciaException ex) {
-                    Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                    Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrió un error", ex);
                 }
 
             }
@@ -1489,17 +1503,23 @@ public class Sistema extends javax.swing.JFrame {
     private void btnAgregarComentarioActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnAgregarComentarioActionPerformed
         // TODO add your handling code here:
 
-        if (txtComentario.getText().equals("")) {
+        if (tableMenu.getSelectedRow() == -1) {
             JOptionPane.showMessageDialog(null, "SELECCIONE UNA FILA");
-        } else {
-            int id = Integer.parseInt(tableMenu.getValueAt(tableMenu.getSelectedRow(), 0).toString());
-            for (int i = 0; i < tableMenu.getRowCount(); i++) {
-                if (tableMenu.getValueAt(i, 0).equals(id)) {
-                    tmp.setValueAt(txtComentario.getText(), i, 5);
-                    txtComentario.setText("");
-                    tableMenu.clearSelection();
-                    return;
-                }
+            return;
+        }
+
+        // Obtener el ID de la fila seleccionada
+        int id = Integer.parseInt(tableMenu.getValueAt(tableMenu.getSelectedRow(), 0).toString());
+
+        // Recorrer las filas de la tabla
+        for (int i = 0; i < tableMenu.getRowCount(); i++) {
+            // Verificar si el ID coincide con el de la fila actual
+            if (tableMenu.getValueAt(i, 0).equals(id)) {
+                // Actualizar el comentario en la fila correspondiente
+                tmp.setValueAt(txtComentario.getText(), i, 5);
+                txtComentario.setText("");
+                tableMenu.clearSelection();
+                return;
             }
         }
 
@@ -1574,7 +1594,7 @@ public class Sistema extends javax.swing.JFrame {
                 Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
             }
             LimpiarTableMenu();
-            JOptionPane.showMessageDialog(null, "PEDIDO REGISTRADO");
+            
             jTabbedPane1.setSelectedIndex(0);
         } else {
             JOptionPane.showMessageDialog(null, "NO HAY PRODUCTO EN LA PEDIDO");
@@ -1586,22 +1606,21 @@ public class Sistema extends javax.swing.JFrame {
         // TODO add your handling code here:
 
         if (txtNombreSala.getText().equals("") || txtMesas.getText().equals("")) {
-            JOptionPane.showMessageDialog(null, "Los campos esta vacios");
+            JOptionPane.showMessageDialog(null, "Los campos están vacíos");
         } else {
-            sl.setNombre(txtNombreSala.getText());
-            sl.setMesas(Integer.parseInt(txtMesas.getText()));
+            SalasDTO salaDTO = new SalasDTO();
+            salaDTO.setNombre(txtNombreSala.getText());
+            salaDTO.setMesas(Integer.parseInt(txtMesas.getText()));
+
             try {
-                salaControl.RegistrarSala(sl);
-            } catch (PersistenciaException ex) {
-                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
-            }
-            JOptionPane.showMessageDialog(null, "Sala Registrado");
-            LimpiarSala();
-            LimpiarTable();
-            try {
+                Sala sala = Convertidor.convertirSalaDTOaEntidad(salaDTO);
+                salaControl.RegistrarSala(sala);
+                JOptionPane.showMessageDialog(null, "Sala Registrada");
+                LimpiarSala();
+                LimpiarTable();
                 ListarSalas();
             } catch (PersistenciaException ex) {
-                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrió un error", ex);
             }
         }
 
@@ -1614,23 +1633,23 @@ public class Sistema extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Seleccione una fila");
         } else {
             if (!"".equals(txtNombreSala.getText())) {
-                sl.setNombre(txtNombreSala.getText());
-                sl.setId(Integer.parseInt(txtIdSala.getText()));
+                SalasDTO salaDTO = new SalasDTO();
+                salaDTO.setNombre(txtNombreSala.getText());
+                salaDTO.setId(Integer.parseInt(txtIdSala.getText()));
+
                 try {
-                    salaControl.Modificar(sl);
-                } catch (PersistenciaException ex) {
-                    Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
-                }
-                JOptionPane.showMessageDialog(null, "Sala Modificada");
-                LimpiarSala();
-                LimpiarTable();
-                try {
+                    Sala sala = Convertidor.convertirSalaDTOaEntidad(salaDTO);
+                    salaControl.Modificar(sala);
+                    JOptionPane.showMessageDialog(null, "Sala Modificada");
+                    LimpiarSala();
+                    LimpiarTable();
                     ListarSalas();
                 } catch (PersistenciaException ex) {
-                    Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                    Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrió un error", ex);
                 }
             }
         }
+
 
     }//GEN-LAST:event_btnEditarSalaActionPerformed
 
@@ -1680,10 +1699,8 @@ public class Sistema extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, "Seleccione una fila");
         } else {
             try {
-                pedidoControl.generarPDFPedido(Integer.parseInt(txtIdHistorialPedido.getText()));
+                pedidoControl.pdfPedido(Integer.parseInt(txtIdHistorialPedido.getText()));
             } catch (DocumentException ex) {
-                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
-            } catch (PersistenciaException ex) {
                 Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
             }
             txtIdHistorialPedido.setText("");
@@ -1697,9 +1714,9 @@ public class Sistema extends javax.swing.JFrame {
         int pregunta = JOptionPane.showConfirmDialog(null, "Esta seguro de finalizar?");
         if (pregunta == 0) {
             try {
-                if (pedidoControl.actualizarEstadoPedido(Integer.parseInt(txtIdPedido.getText()))) {
+                if (pedidoControl.actualizarEstado(Integer.parseInt(txtIdPedido.getText()))) {
                     try {
-                        pedidoControl.generarPDFPedido(Integer.parseInt(txtIdPedido.getText()));
+                        pedidoControl.pdfPedido(Integer.parseInt(txtIdPedido.getText()));
                     } catch (DocumentException ex) {
                         Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
                     }
@@ -1743,22 +1760,28 @@ public class Sistema extends javax.swing.JFrame {
     private void btnActualizarConfigActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnActualizarConfigActionPerformed
         // TODO add your handling code here:
 
-        if (!"".equals(txtRucConfig.getText()) || !"".equals(txtNombreConfig.getText()) || !"".equals(txtTelefonoConfig.getText()) || !"".equals(txtDireccionConfig.getText())) {
+        if (!"".equals(txtRucConfig.getText()) || !"".equals(txtNombreConfig.getText())
+                || !"".equals(txtTelefonoConfig.getText()) || !"".equals(txtDireccionConfig.getText())) {
             try {
-                conf.setRuc(txtRucConfig.getText());
-                conf.setNombre(txtNombreConfig.getText());
-                conf.setTelefono(txtTelefonoConfig.getText());
-                conf.setDireccion(txtDireccionConfig.getText());
-                conf.setMensaje(txtMensaje.getText());
-                conf.setId(Integer.parseInt(txtIdConfig.getText()));
-                loginControl.ModificarDatos(conf);
-                JOptionPane.showMessageDialog(null, "Datos de la empresa modificado");
-                //ListarConfig();
+                ConfigDTO configDto = new ConfigDTO();
+                configDto.setRuc(txtRucConfig.getText());
+                configDto.setNombre(txtNombreConfig.getText());
+                configDto.setTelefono(txtTelefonoConfig.getText());
+                configDto.setDireccion(txtDireccionConfig.getText());
+                configDto.setMensaje(txtMensaje.getText());
+                configDto.setId(Integer.parseInt(txtIdConfig.getText()));
+
+                Config config = convertir.convertirConfigDTO(configDto);
+                loginControl.ModificarDatos(config);
+
+                JOptionPane.showMessageDialog(null, "Datos de la empresa modificados");
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "Error: ID no válido");
             } catch (PersistenciaException ex) {
-                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrió un error", ex);
             }
         } else {
-            JOptionPane.showMessageDialog(null, "Los campos estan vacios");
+            JOptionPane.showMessageDialog(null, "Los campos están vacíos");
         }
 
     }//GEN-LAST:event_btnActualizarConfigActionPerformed
@@ -1776,18 +1799,6 @@ public class Sistema extends javax.swing.JFrame {
 
     }//GEN-LAST:event_btnUsuariosActionPerformed
 
-    private void labelLogoMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_labelLogoMouseClicked
-        // TODO add your handling code here:
-
-        jTabbedPane1.setSelectedIndex(0);
-        PanelSalas.removeAll();
-        try {
-            panelSalas();
-        } catch (PersistenciaException ex) {
-            Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
-        }
-    }//GEN-LAST:event_labelLogoMouseClicked
-
     private void txtBuscarPlatoKeyReleased(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtBuscarPlatoKeyReleased
         try {
             // TODO add your handling code here:
@@ -1804,23 +1815,36 @@ public class Sistema extends javax.swing.JFrame {
     private void btnIniciarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnIniciarActionPerformed
         // TODO add your handling code here:
 
-        if (txtNombre.getText().equals("") || txtUsuario.getText().equals("") || txtPass.getPassword().equals("")) {
-            JOptionPane.showMessageDialog(null, "Todo los campos son requeridos");
+        if (txtNombre.getText().isEmpty() || txtUsuario.getText().isEmpty() || String.valueOf(txtPass.getPassword()).isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Todos los campos son requeridos");
         } else {
             try {
-                LoginDTO lg = new LoginDTO();
-                String usuario = txtUsuario.getText();
-                String pass = String.valueOf(txtPass.getPassword());
-                String nom = txtNombre.getText();
-                String rol = cbxRol.getSelectedItem().toString();
-                lg.setNombre(nom);
-                lg.setUsuario(usuario);
-                lg.setPass(pass);
-                lg.setRol(rol);
-                loginControl.Registrar(lg);
+                // Crear un nuevo objeto Usuario y establecer sus atributos
+                Usuario usuario = new Usuario();
+                usuario.setNombre(txtNombre.getText());
+                usuario.setUsuario(txtUsuario.getText());
+                usuario.setPass(String.valueOf(txtPass.getPassword()));
+                usuario.setRol(cbxRol.getSelectedItem().toString());
+
+                // Llamar al método Registrar del controlador con el objeto Usuario
+                loginControl.Registrar(usuario);
+
+                // Mostrar un mensaje de éxito
                 JOptionPane.showMessageDialog(null, "Usuario Registrado");
+
+                // Limpiar los campos después del registro
+                txtNombre.setText("");
+                txtUsuario.setText("");
+                txtPass.setText("");
+                cbxRol.setSelectedIndex(0);
+
+                // Actualizar la tabla de usuarios
+                LimpiarTable();
+                ListarUsuarios();
+
             } catch (PersistenciaException ex) {
-                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+                // Manejar la excepción, por ejemplo, mostrar un mensaje de error en el registro
+                Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrió un error al registrar usuario", ex);
             }
         }
 
@@ -1865,16 +1889,30 @@ public class Sistema extends javax.swing.JFrame {
     private void txtPrecioPlatoKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtPrecioPlatoKeyTyped
         // TODO add your handling code here:
 
-        event.numberDecimalKeyPress(evt, txtPrecioPlato);
+        eventoDto.numberDecimalKeyPress(evt, txtPrecioPlato);
 
     }//GEN-LAST:event_txtPrecioPlatoKeyTyped
 
     private void txtMesasKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtMesasKeyTyped
         // TODO add your handling code here:
 
-        event.numberDecimalKeyPress(evt, txtMesas);
+        eventoDto.numberDecimalKeyPress(evt, txtMesas);
 
     }//GEN-LAST:event_txtMesasKeyTyped
+
+    private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
+        // TODO add your handling code here:
+
+        jTabbedPane1.setSelectedIndex(0);
+        PanelSalas.removeAll();
+        try {
+            panelSalas();
+        } catch (PersistenciaException ex) {
+            Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
+        }
+
+
+    }//GEN-LAST:event_jButton1ActionPerformed
 
     // ---METODOS LIMPIAR--- //
     public void LimpiarTable() {
@@ -1905,7 +1943,7 @@ public class Sistema extends javax.swing.JFrame {
 
     // ---METODOS------------------------------------------------------------------------------------------------------------------------------------------------------------------ //
     private void ListarPlatos(JTable tabla) throws PersistenciaException {
-        List<PlatosDTO> Listar = platoControl.Listar(txtBuscarPlato.getText(), fechaFormato);
+       List<PlatosDTO> Listar = platoControl.Listar(txtBuscarPlato.getText(), fechaFormato);
         modelo = (DefaultTableModel) tabla.getModel();
         Object[] ob = new Object[3];
         for (int i = 0; i < Listar.size(); i++) {
@@ -1914,8 +1952,7 @@ public class Sistema extends javax.swing.JFrame {
             ob[2] = Listar.get(i).getPrecio();
             modelo.addRow(ob);
         }
-        tabla.setModel(modelo);
-        colorHeader(TablePlatos);
+        colorHeader(tabla);
     }
 
     private void ListarSalas() throws PersistenciaException {
@@ -1951,33 +1988,61 @@ public class Sistema extends javax.swing.JFrame {
     }
 
     private void RegistrarPedido() throws PersistenciaException {
-        int id_sala = Integer.parseInt(txtTempIdSala.getText());
-        int num_mesa = Integer.parseInt(txtTempNumMesa.getText());
-        double monto = Totalpagar;
-        ped.setId_sala(id_sala);
-        ped.setNum_mesa(num_mesa);
-        ped.setTotal(monto);
-        ped.setUsuario(LabelVendedor.getText());
-        pedidoControl.registrarPedido(ped);
+        try {
+            // Obtener valores del formulario
+            int idSala = Integer.parseInt(txtTempIdSala.getText());
+            int numMesa = Integer.parseInt(txtTempNumMesa.getText());
+            double monto = Totalpagar;
+            String usuario = LabelVendedor.getText();
+
+            // Crear objeto DTO con los valores obtenidos
+            PedidosDTO pedidoDto = new PedidosDTO();
+            pedidoDto.setId_sala(idSala);
+            pedidoDto.setNum_mesa(numMesa);
+            pedidoDto.setTotal(monto);
+            pedidoDto.setUsuario(usuario);
+
+            // Convertir DTO a entidad Pedido y registrar el pedido
+            Pedido pedido = convertir.convertirPedidoDTOaEntidad(pedidoDto);
+            pedidoControl.RegistrarPedido(pedido);
+
+            // Mostrar mensaje de éxito al usuario
+            JOptionPane.showMessageDialog(this, "Pedido registrado.", "Éxito", JOptionPane.INFORMATION_MESSAGE);
+        } catch (NumberFormatException e) {
+            // Manejar errores de conversión de texto a números
+            JOptionPane.showMessageDialog(this, "Por favor, ingrese números válidos para el ID de sala y número de mesa.", "Error", JOptionPane.ERROR_MESSAGE);
+        } catch (PersistenciaException ex) {
+            // Manejar errores de persistencia
+            JOptionPane.showMessageDialog(this, "Error al registrar el pedido. Por favor, inténtelo de nuevo más tarde.", "Error", JOptionPane.ERROR_MESSAGE);
+            Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrió un error al registrar el pedido", ex);
+        }
     }
 
     private void detallePedido() throws PersistenciaException {
-        int id = pedidoControl.obtenerIdPedido();
+        long id = pedidoControl.IdPedido(); // Cambiado a long
+
         for (int i = 0; i < tableMenu.getRowCount(); i++) {
             String nombre = tableMenu.getValueAt(i, 1).toString();
             int cant = Integer.parseInt(tableMenu.getValueAt(i, 2).toString());
             double precio = Double.parseDouble(tableMenu.getValueAt(i, 3).toString());
-            detPedido.setNombre(nombre);
-            detPedido.setCantidad(cant);
-            detPedido.setPrecio(precio);
-            detPedido.setComentario(tableMenu.getValueAt(i, 5).toString());
-            detPedido.setId_pedido(id);
-            pedidoControl.registrarDetallePedido(detPedido);
 
+            DetallePedidoDTO detallePedidoDto = new DetallePedidoDTO();
+            detallePedidoDto.setNombre(nombre);
+            detallePedidoDto.setCantidad(cant);
+            detallePedidoDto.setPrecio(precio);
+            detallePedidoDto.setComentario(tableMenu.getValueAt(i, 5).toString());
+            detallePedidoDto.setId_pedido((int) id); // Convertido a int
+
+            // Convertir el DetallePedidoDTO a un DetallePedido
+            DetallePedido detallePedido = convertir.convertirDetallePedidoDTOaEntidad(detallePedidoDto);
+
+            // Registrar el DetallePedido en la base de datos
+            pedidoControl.RegistrarDetalle(detallePedido);
         }
     }
 
     private void panelSalas() throws PersistenciaException {
+        PanelSalas.removeAll(); // Limpiar el panel antes de agregar nuevos botones
         List<SalasDTO> Listar = salaControl.Listar();
         for (int i = 0; i < Listar.size(); i++) {
             int id = Listar.get(i).getId();
@@ -1989,14 +2054,14 @@ public class Sistema extends javax.swing.JFrame {
             boton.setBackground(new Color(204, 204, 204));
             PanelSalas.add(boton);
             boton.addActionListener((ActionEvent e) -> {
-                LimpiarTable();
-                PanelMesas.removeAll();
                 try {
+                    LimpiarTable();
+                    PanelMesas.removeAll();
                     panelMesas(id, cantidad);
+                    jTabbedPane1.setSelectedIndex(2);
                 } catch (PersistenciaException ex) {
                     Logger.getLogger(Sistema.class.getName()).log(Level.SEVERE, "Ocurrio un error", ex);
                 }
-                jTabbedPane1.setSelectedIndex(2);
             });
         }
     }
@@ -2004,17 +2069,16 @@ public class Sistema extends javax.swing.JFrame {
     private void panelMesas(int id_sala, int cant) throws PersistenciaException {
         for (int i = 1; i <= cant; i++) {
             int num_mesa = i;
-            //verificar estado
             JButton boton = new JButton("MESA N°: " + i, new ImageIcon(getClass().getResource("/images/mesa.png")));
             boton.setHorizontalTextPosition(JButton.CENTER);
             boton.setVerticalTextPosition(JButton.BOTTOM);
-            int verificar = pedidoControl.verificarEstadoPedido(num_mesa, id_sala);
+            int verificar = pedidoControl.verificarEstado(num_mesa, id_sala);
             if (verificar > 0) {
-                boton.setBackground(new Color(255, 51, 51));
+                boton.setBackground(new Color(153, 51, 0)); // Cambia el color a rojo si hay un pedido pendiente
             } else {
-                boton.setBackground(new Color(0, 102, 102));
+                boton.setBackground(new Color(0, 102, 51)); // Mantén el color normal si no hay pedido pendiente
             }
-            boton.setForeground(Color.BLACK);
+            boton.setForeground(Color.WHITE);
             boton.setFocusable(false);
             boton.setCursor(new Cursor(Cursor.HAND_CURSOR));
             PanelMesas.add(boton);
@@ -2065,28 +2129,31 @@ public class Sistema extends javax.swing.JFrame {
         colorHeader(tableFinalizar);
     }
 
-    public void verPedido(int id_pedido) throws PersistenciaException {
-        ped = pedidoControl.verPedido(id_pedido);
-        totalFinalizar.setText("" + ped.getTotal());
-        txtFechaHora.setText("" + ped.getFecha());
-        txtSalaFinalizar.setText("" + ped.getSala());
-        txtNumMesaFinalizar.setText("" + ped.getNum_mesa());
-        txtIdPedido.setText("" + ped.getId());
+    public void verPedido(int idPedido) throws PersistenciaException {
+        Pedido pedido = pedidoControl.verPedido(idPedido);
+        totalFinalizar.setText("" + pedido.getTotal());
+        txtFechaHora.setText("" + pedido.getFecha());
+        txtSalaFinalizar.setText("" + pedido.getSala().getNombre());
+        txtNumMesaFinalizar.setText("" + pedido.getNumMesa());
+        txtIdPedido.setText("" + pedido.getId());
     }
 
     private void ListarPedidos() throws PersistenciaException {
         TablesDTO color = new TablesDTO();
-        List<PedidosDTO> Listar = pedidoControl.listarPedidos();
+        List<EntidadesJPA.Pedido> listaEntidades = pedidoControl.listarPedidos();
         modelo = (DefaultTableModel) TablePedidos.getModel();
         Object[] ob = new Object[7];
-        for (int i = 0; i < Listar.size(); i++) {
-            ob[0] = Listar.get(i).getId();
-            ob[1] = Listar.get(i).getSala();
-            ob[2] = Listar.get(i).getUsuario();
-            ob[3] = Listar.get(i).getNum_mesa();
-            ob[4] = Listar.get(i).getFecha();
-            ob[5] = Listar.get(i).getTotal();
-            ob[6] = Listar.get(i).getEstado();
+        for (EntidadesJPA.Pedido pedido : listaEntidades) {
+            // Convertir el objeto EntidadesJPA.Pedido a DTO.PedidosDTO
+            PedidosDTO pedidoDTO = convertir.convertirPedidoEntidadADTO(pedido); // Debes implementar este método
+
+            ob[0] = pedidoDTO.getId();
+            ob[1] = pedidoDTO.getSala();
+            ob[2] = pedidoDTO.getUsuario();
+            ob[3] = pedidoDTO.getNum_mesa();
+            ob[4] = pedidoDTO.getFecha();
+            ob[5] = pedidoDTO.getTotal();
+            ob[6] = pedidoDTO.getEstado();
             modelo.addRow(ob);
         }
         colorHeader(TablePedidos);
@@ -2094,26 +2161,44 @@ public class Sistema extends javax.swing.JFrame {
     }
 
     public void ListarConfig() throws PersistenciaException {
-        conf = loginControl.datosEmpresa();
-        txtIdConfig.setText("" + conf.getId());
-        txtRucConfig.setText("" + conf.getRuc());
-        txtNombreConfig.setText("" + conf.getNombre());
-        txtTelefonoConfig.setText("" + conf.getTelefono());
-        txtDireccionConfig.setText("" + conf.getDireccion());
-        txtMensaje.setText("" + conf.getMensaje());
+        Config config = loginControl.datosEmpresa();
+
+        // Crear una nueva instancia de ConfigDTO y asignar los valores de Config
+        ConfigDTO confDto = new ConfigDTO();
+        confDto.setId((int) config.getId());
+        confDto.setRuc(config.getRuc());
+        confDto.setNombre(config.getNombre());
+        confDto.setTelefono(config.getTelefono());
+        confDto.setDireccion(config.getDireccion());
+        confDto.setMensaje(config.getMensaje());
+
+        // Asignar los valores de ConfigDTO a los componentes de la GUI
+        txtIdConfig.setText("" + confDto.getId());
+        txtRucConfig.setText("" + confDto.getRuc());
+        txtNombreConfig.setText("" + confDto.getNombre());
+        txtTelefonoConfig.setText("" + confDto.getTelefono());
+        txtDireccionConfig.setText("" + confDto.getDireccion());
+        txtMensaje.setText("" + confDto.getMensaje());
     }
 
     private void ListarUsuarios() throws PersistenciaException {
-        List<LoginDTO> Listar = loginControl.ListarUsuarios();
+        // Obtener la lista de usuarios del controlador
+        List<Usuario> Listar = loginControl.ListarUsuarios();
+
+        // Limpiar el modelo de la tabla antes de agregar nuevas filas
         modelo = (DefaultTableModel) TableUsuarios.getModel();
-        Object[] ob = new Object[4];
+        modelo.setRowCount(0);
+
+        // Agregar las filas al modelo de la tabla sin el ID
         for (int i = 0; i < Listar.size(); i++) {
-            ob[0] = Listar.get(i).getId();
-            ob[1] = Listar.get(i).getNombre();
-            ob[2] = Listar.get(i).getUsuario();
-            ob[3] = Listar.get(i).getRol();
+            Object[] ob = new Object[3]; // Creamos un array de objetos con 3 elementos en lugar de 4
+            ob[0] = Listar.get(i).getNombre();
+            ob[1] = Listar.get(i).getUsuario();
+            ob[2] = Listar.get(i).getRol();
             modelo.addRow(ob);
         }
+
+        // Aplicar estilo al encabezado de la tabla
         colorHeader(TableUsuarios);
     }
 
@@ -2148,6 +2233,7 @@ public class Sistema extends javax.swing.JFrame {
     private javax.swing.JButton btnSala;
     private javax.swing.JButton btnUsuarios;
     private javax.swing.JComboBox<String> cbxRol;
+    private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel10;
     private javax.swing.JLabel jLabel11;
@@ -2207,7 +2293,6 @@ public class Sistema extends javax.swing.JFrame {
     private javax.swing.JScrollPane jScrollPane6;
     private javax.swing.JScrollPane jScrollPane9;
     private javax.swing.JTabbedPane jTabbedPane1;
-    private javax.swing.JLabel labelLogo;
     private javax.swing.JTable tableFinalizar;
     private javax.swing.JTable tableMenu;
     private javax.swing.JTable tableSala;

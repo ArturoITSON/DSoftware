@@ -4,8 +4,9 @@
  */
 package Interfaces;
 
-import DTO.DetallePedidoDTO;
-import DTO.PedidosDTO;
+
+import EntidadesJPA.DetallePedido;
+import EntidadesJPA.Pedido;
 import Persistencia.PersistenciaException;
 import com.itextpdf.text.DocumentException;
 import java.util.List;
@@ -20,19 +21,19 @@ public interface IPedidosDAO {
 
     public int verificarEstado(int mesa, int id_sala) throws PersistenciaException;
 
-    public int RegistrarPedido(PedidosDTO ped) throws PersistenciaException;
+    public int RegistrarPedido(Pedido ped) throws PersistenciaException;
 
-    public int RegistrarDetalle(DetallePedidoDTO det) throws PersistenciaException;
+    public int RegistrarDetalle(DetallePedido det) throws PersistenciaException;
 
     public List verPedidoDetalle(int id_pedido) throws PersistenciaException;
 
-    public PedidosDTO verPedido(int id_pedido) throws PersistenciaException;
+    public Pedido verPedido(int idPedido) throws PersistenciaException;
 
-    public List finalizarPedido(int id_pedido) throws PersistenciaException;
+    public List finalizarPedido(int idPedido) throws PersistenciaException;
 
-    public void pdfPedido(int id_pedido) throws DocumentException;
+    public void pdfPedido(int idPedido) throws DocumentException;
 
-    public boolean actualizarEstado(int id_pedido) throws PersistenciaException;
+    public boolean actualizarEstado(int idPedido) throws PersistenciaException;
 
     public List listarPedidos() throws PersistenciaException;
 

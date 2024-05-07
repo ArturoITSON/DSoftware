@@ -4,8 +4,8 @@
  */
 package Interfaces;
 
-import DTO.ConfigDTO;
-import DTO.LoginDTO;
+import EntidadesJPA.Config;
+import EntidadesJPA.Usuario;
 import Persistencia.PersistenciaException;
 import java.util.List;
 
@@ -13,20 +13,18 @@ import java.util.List;
  *
  * @author Carlo
  */
-public interface ILoginDAO {
+public interface IUsuarioDAO {
     
-    public LoginDTO log(String usuario, String pass)throws PersistenciaException;
     
-    public boolean Registrar(LoginDTO reg)throws PersistenciaException;
+    public Usuario log(String usuario, String pass)throws PersistenciaException;
+    
+    public void Registrar(Usuario reg)throws PersistenciaException;
     
     public List ListarUsuarios()throws PersistenciaException;
     
-    public boolean ModificarDatos(ConfigDTO conf)throws PersistenciaException;
+    public void ModificarDatos(Config conf)throws PersistenciaException;
             
-    public ConfigDTO datosEmpresa()throws PersistenciaException;
-    
-    
-    
+    public Config datosEmpresa()throws PersistenciaException;
     
     
 }

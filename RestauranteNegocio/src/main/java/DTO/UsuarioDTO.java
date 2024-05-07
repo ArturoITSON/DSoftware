@@ -8,18 +8,18 @@ package DTO;
  *
  * @author Carlo
  */
-public class LoginDTO {
+public class UsuarioDTO {
     
-      private int id;
+    private int id;
     private String nombre;
     private String usuario;
     private String pass;
     private String rol;
 
-    public LoginDTO() {
+    public UsuarioDTO() {
     }
 
-    public LoginDTO(int id, String nombre, String usuario, String pass, String rol) {
+    public UsuarioDTO(int id, String nombre, String usuario, String pass, String rol) {
         this.id = id;
         this.nombre = nombre;
         this.usuario = usuario;
@@ -27,7 +27,7 @@ public class LoginDTO {
         this.rol = rol;
     }
 
-
+    // Getters y setters
     public int getId() {
         return id;
     }
@@ -66,6 +66,17 @@ public class LoginDTO {
 
     public void setRol(String rol) {
         this.rol = rol;
+    }
+
+    @Override
+    public String toString() {
+        return "LoginDTO{" +
+                "id=" + id +
+                ", nombre='" + nombre + '\'' +
+                ", usuario='" + usuario + '\'' +
+                ", pass='" + pass + '\'' +
+                ", rol='" + rol + '\'' +
+                '}';
     }
     
     

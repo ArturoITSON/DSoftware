@@ -4,134 +4,195 @@
  */
 package DAO;
 
-import Conexion.Conexion;
+import Conexion.IConexionBD;
 import DTO.PlatosDTO;
+import EntidadesJPA.Plato;
 import Interfaces.IPlatosDAO;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import Persistencia.PersistenciaException;
+
 import java.util.ArrayList;
 import java.util.List;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityTransaction;
+import javax.persistence.TypedQuery;
 
 /**
  *
  * @author Carlo
  */
-public class PlatosDAO implements IPlatosDAO{
-    
-    
-    private Connection con;
-    private PreparedStatement ps;
-    private ResultSet rs;
-    private Conexion cn = Conexion.obtenerInstancia();
-    
+public class PlatosDAO implements IPlatosDAO {
+
+    private IConexionBD conexion;
     private static PlatosDAO instance;
 
-    // Constructor privado para evitar la instanciación directa
-    private PlatosDAO() {}
+    // Constructor público que recibe la conexión como parámetro
+    public PlatosDAO(IConexionBD conexion) {
+        this.conexion = conexion;
+    }
 
-    // Método estático para obtener la instancia única de PlatosDAO
-    public static PlatosDAO getInstance() {
+    // Método para obtener una instancia única de LoginDAO
+    public static PlatosDAO getInstance(IConexionBD conexion) {
         if (instance == null) {
-            instance = new PlatosDAO();
+            instance = new PlatosDAO(conexion);
         }
         return instance;
     }
-    
-    
 
     @Override
-    public boolean Registrar(PlatosDTO pla) {
-        String sql = "INSERT INTO platos (nombre, precio, fecha) VALUES (?,?,?)";
+    public boolean Registrar(Plato pla) throws PersistenciaException {
+        EntityManager entityManager = conexion.conexion();
+        EntityTransaction transaction = null;
         try {
-            con = cn.getConnection();
-            ps = con.prepareStatement(sql);
-            ps.setString(1, pla.getNombre());
-            ps.setDouble(2, pla.getPrecio());
-            ps.setString(3, pla.getFecha());
-            ps.execute();
+            // Iniciar una transacción
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+
+            // Crear una instancia de la entidad Plato
+            Plato plato = new Plato();
+            plato.setNombre(pla.getNombre());
+            plato.setPrecio(pla.getPrecio());
+            plato.setFecha(pla.getFecha()); // Setear la fecha directamente
+
+            // Guardar el plato en la base de datos
+            entityManager.persist(plato);
+
+            // Confirmar la transacción
+            transaction.commit();
+
             return true;
-        } catch (SQLException e) {
-            System.out.println(e.toString());
-            return false;
-        }finally {
-            try {
-                con.close();
-            } catch (SQLException ex) {
-                System.out.println(ex.toString());
+        } catch (Exception e) {
+            // Si ocurre un error, hacer rollback de la transacción
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
             }
-        }
-    }
-
-    @Override
-    public List Listar(String valor, String fecha) {
-        List<PlatosDTO> Lista = new ArrayList();
-        String sql = "SELECT * FROM platos WHERE fecha = ?";
-        String consulta = "SELECT * FROM platos WHERE nombre LIKE '%"+valor+"%' AND fecha = ?";
-        try {
-            con = cn.getConnection();
-            if(valor.equalsIgnoreCase("")){
-                ps = con.prepareStatement(sql);
-            }else{
-                ps = con.prepareStatement(consulta);
-            }
-            ps.setString(1, fecha);
-            rs = ps.executeQuery();
-            while (rs.next()) {
-                PlatosDTO pl = new PlatosDTO();
-                pl.setId(rs.getInt("id"));
-                pl.setNombre(rs.getString("nombre"));
-                pl.setPrecio(rs.getDouble("precio"));
-                Lista.add(pl);
-            }
-        } catch (SQLException e) {
-            System.out.println(e.toString());
-        }
-        return Lista;
-    }
-
-    @Override
-    public boolean Eliminar(int id) {
-        String sql = "DELETE FROM platos WHERE id = ?";
-        try {
-            ps = con.prepareStatement(sql);
-            ps.setInt(1, id);
-            ps.execute();
-            return true;
-        } catch (SQLException e) {
-            System.out.println(e.toString());
+            System.out.println("Error al registrar el plato: " + e.getMessage());
             return false;
         } finally {
-            try {
-                con.close();
-            } catch (SQLException ex) {
-                System.out.println(ex.toString());
+            // Cerrar el EntityManager
+            if (entityManager != null) {
+                entityManager.close();
+            }
+        }
+
+    }
+
+    @Override
+    public List Listar(String valor, String fecha) throws PersistenciaException {
+        EntityManager entityManager = conexion.conexion();
+        try {
+            // Construir la consulta JPQL
+            String jpql;
+            if (valor.equalsIgnoreCase("")) {
+                jpql = "SELECT p FROM Plato p";
+            } else {
+                jpql = "SELECT p FROM Plato p WHERE p.nombre LIKE :nombre";
+            }
+
+            // Crear la consulta con TypedQuery
+            TypedQuery<Plato> query = entityManager.createQuery(jpql, Plato.class);
+            if (!valor.equalsIgnoreCase("")) {
+                query.setParameter("nombre", "%" + valor + "%");
+            }
+
+            // Obtener el resultado
+            List<Plato> platos = query.getResultList();
+
+            // Convertir los resultados a DTOs y retornar la lista
+            List<PlatosDTO> listaDTO = new ArrayList<>();
+            for (Plato plato : platos) {
+                PlatosDTO platoDTO = new PlatosDTO();
+                platoDTO.setId((int) plato.getId());
+                platoDTO.setNombre(plato.getNombre());
+                platoDTO.setPrecio(plato.getPrecio());
+                platoDTO.setFecha(plato.getFecha());
+                listaDTO.add(platoDTO);
+            }
+            return listaDTO;
+        } catch (Exception e) {
+            System.out.println("Error al listar los platos: " + e.getMessage());
+            return new ArrayList<>();
+        } finally {
+            // Cerrar el EntityManager
+            if (entityManager != null) {
+                entityManager.close();
             }
         }
     }
 
     @Override
-    public boolean Modificar(PlatosDTO pla) {
-        String sql = "UPDATE platos SET nombre=?, precio=? WHERE id=?";
+    public boolean Eliminar(int id) throws PersistenciaException {
+        EntityManager entityManager = conexion.conexion();
+        EntityTransaction transaction = null;
         try {
-            ps = con.prepareStatement(sql);
-            ps.setString(1, pla.getNombre());
-            ps.setDouble(2, pla.getPrecio());
-            ps.setInt(3, pla.getId());
-            ps.execute();
-            return true;
-        } catch (SQLException e) {
-            System.out.println(e.toString());
+            // Obtener el EntityManager
+
+            // Iniciar una transacción
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+
+            // Encontrar el Plato por su ID
+            Plato plato = entityManager.find(Plato.class, id);
+            if (plato != null) {
+                // Si el plato existe, eliminarlo
+                entityManager.remove(plato);
+                transaction.commit();
+                return true;
+            } else {
+                System.out.println("El plato con ID " + id + " no existe.");
+                return false;
+            }
+        } catch (Exception e) {
+            // Si ocurre algún error, realizar un rollback de la transacción
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            System.out.println("Error al eliminar el plato: " + e.getMessage());
             return false;
         } finally {
-            try {
-                con.close();
-            } catch (SQLException e) {
-                System.out.println(e.toString());
+            // Cerrar el EntityManager
+            if (entityManager != null) {
+                entityManager.close();
             }
         }
     }
-    
-    
+
+    @Override
+    public boolean Modificar(Plato pla) throws PersistenciaException {
+        EntityManager entityManager = conexion.conexion();
+        EntityTransaction transaction = null;
+        try {
+            // Obtener el EntityManager
+
+            // Iniciar una transacción
+            transaction = entityManager.getTransaction();
+            transaction.begin();
+
+            // Encontrar el Plato por su ID
+            Plato plato = entityManager.find(Plato.class, pla.getId());
+            if (plato != null) {
+                // Si el plato existe, modificar sus atributos y guardar los cambios
+                plato.setNombre(pla.getNombre());
+                plato.setPrecio(pla.getPrecio());
+                entityManager.merge(plato);
+                transaction.commit();
+                return true;
+            } else {
+                System.out.println("El plato con ID " + pla.getId() + " no existe.");
+                return false;
+            }
+        } catch (Exception e) {
+            // Si ocurre algún error, realizar un rollback de la transacción
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            System.out.println("Error al modificar el plato: " + e.getMessage());
+            return false;
+        } finally {
+            // Cerrar el EntityManager
+            if (entityManager != null) {
+                entityManager.close();
+            }
+        }
+    }
+
 }

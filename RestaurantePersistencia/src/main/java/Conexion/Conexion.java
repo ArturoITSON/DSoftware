@@ -1,42 +1,32 @@
-
 package Conexion;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
+import Persistencia.PersistenciaException;
+import javax.persistence.EntityManager;
+import javax.persistence.EntityManagerFactory;
+import javax.persistence.Persistence;
 
 /**
  *
  * @author Carlo
  */
-public class Conexion {
-   private static Conexion instancia;
-    private Connection con;
+public class Conexion implements IConexionBD {
 
-    private Conexion() {
-        
+    public Conexion() {
     }
 
-    public static Conexion obtenerInstancia() {
-        if (instancia == null) {
-            instancia = new Conexion();
-        }
-        return instancia;
+    /**
+     * Establece una conexión con la base de datos.
+     *
+     * @return Una instancia de EntityManager para interactuar con la base de
+     * datos.
+     *
+     * @throws PersistenciaException Si ocurre un error durante la conexión.
+     */
+    @Override
+    public EntityManager conexion() throws PersistenciaException {
+        EntityManagerFactory entity = Persistence.createEntityManagerFactory("CONEXIONPU");
+        EntityManager entityManager = entity.createEntityManager();
+        return entityManager;
     }
 
-    public Connection getConnection(){
-        try {
-            if (con == null || con.isClosed()) {
-                String myBD = "jdbc:mysql://localhost:3306/restaurante?serverTimezone=UTC";
-                con = DriverManager.getConnection(myBD, "root", "Tequida11");
-            }
-            return con;
-        } catch (SQLException e) {
-            System.out.println(e.toString());
-        }
-        return null;
-    }
-    
-    
-    
 }

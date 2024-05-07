@@ -4,6 +4,12 @@
  */
 package DTO;
 
+import java.time.LocalDateTime;
+import java.util.Date;
+
+
+
+
 /**
  *
  * @author Carlo
@@ -13,12 +19,12 @@ public class PlatosDTO {
     private int id;
     private String nombre;
     private double precio;
-    private String fecha;
+    private Date  fecha;
 
     public PlatosDTO() {
     }
 
-    public PlatosDTO(int id, String nombre, double precio, String fecha) {
+    public PlatosDTO(int id, String nombre, double precio, Date  fecha) {
         this.id = id;
         this.nombre = nombre;
         this.precio = precio;
@@ -49,11 +55,11 @@ public class PlatosDTO {
         this.precio = precio;
     }
 
-    public String getFecha() {
+    public Date  getFecha() {
         return fecha;
     }
 
-    public void setFecha(String fecha) {
+    public void setFecha(Date fecha) {
         this.fecha = fecha;
     }
     

@@ -1,9 +1,12 @@
 package GUI;
 
-import Control.LoginControl;
-import DAO.LoginDAO;
-import DTO.LoginDTO;
-import Interfaces.ILoginDAO;
+import Control.Convertidor;
+import Control.Factory;
+
+import DTO.UsuarioDTO;
+import EntidadesJPA.Usuario;
+import Interfaces.IUsuarioDAO;
+
 import Persistencia.PersistenciaException;
 
 import javax.swing.JOptionPane;
@@ -15,11 +18,13 @@ import javax.swing.JOptionPane;
 public class frmLogin extends javax.swing.JFrame {
 
     // ---VARIABLES--- //
-    private final LoginControl loginControl;
+    IUsuarioDAO loginControl = Factory.getUsuarioDAO();
+    Convertidor convertir;
 
-    public frmLogin(LoginControl loginControl) {
+    public frmLogin(IUsuarioDAO loginControl, Convertidor convertir) {
         initComponents();
         this.loginControl = loginControl;
+        this.convertir = convertir;
 
         txtUsuario.setText("mungarro");
         txtContraseña.setText("admin");
@@ -35,6 +40,7 @@ public class frmLogin extends javax.swing.JFrame {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jColorChooser1 = new javax.swing.JColorChooser();
         jPanel1 = new javax.swing.JPanel();
         txtUsuario = new javax.swing.JTextField();
         txtContraseña = new javax.swing.JPasswordField();
@@ -183,15 +189,17 @@ public class frmLogin extends javax.swing.JFrame {
 
     // ---METODOS A UTILIZAR--- //
     public void validar() {
-        String usuario = txtUsuario.getText();
+        String usu = txtUsuario.getText();
         String pass = String.valueOf(txtContraseña.getPassword());
-        if (!"".equals(usuario) || !"".equals(pass)) {
+        if (!usu.isEmpty() && !pass.isEmpty()) {
             try {
-                LoginDTO loginDTO = loginControl.log(usuario, pass);
+                // Llamada al método del BO para validar el usuario
+                Usuario usuario = loginControl.log(usu, pass);
 
-                if (loginDTO != null) {
+                if (usuario != null) {
+                    UsuarioDTO usuarioDTO = convertir.convertirUsuarioAUsuarioDTO(usuario);
                     dispose();
-                    Sistema sis = new Sistema(loginDTO);
+                    Sistema sis = new Sistema(usuarioDTO);
                     sis.setVisible(true);
                 } else {
                     JOptionPane.showMessageDialog(null, "Usuario o Contraseña incorrecta");
@@ -199,37 +207,49 @@ public class frmLogin extends javax.swing.JFrame {
             } catch (PersistenciaException e) {
                 JOptionPane.showMessageDialog(null, "Error al iniciar sesión: " + e.getMessage());
                 e.printStackTrace();
+            } catch (NumberFormatException e) {
+                JOptionPane.showMessageDialog(null, "Error: La contraseña no es válida");
+            } catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Error: " + e.getMessage());
+                e.printStackTrace();
             }
+        } else {
+            JOptionPane.showMessageDialog(null, "Por favor, complete ambos campos.");
         }
     }
-    
-    
-    public static void main(String args[]) {
-    /* Set the Nimbus look and feel */
-    //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
-    /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
-     * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
-     */
-    try {
-        for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
-            if ("Nimbus".equals(info.getName())) {
-                javax.swing.UIManager.setLookAndFeel(info.getClassName());
-                break;
-            }
-        }
-    } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
-        java.util.logging.Logger.getLogger(frmLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-    }
-    //</editor-fold>
 
-    /* Create and display the form */
-    java.awt.EventQueue.invokeLater(() -> {
-        // Aquí inicializas tu controlador de login si es necesario
-        LoginControl loginControl = new LoginControl();
-        new frmLogin(loginControl).setVisible(true);
-    });
-}
-    
+    public static void main(String args[]) {
+        /*
+         * Set the Nimbus look and feel
+         */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /*
+         * If Nimbus (introduced in Java SE 6) is not available, stay with the
+         * default look and feel. For details see
+         * http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(frmLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /*
+         * Create and display the form
+         */
+        java.awt.EventQueue.invokeLater(() -> {
+            // Aquí inicializas tu controlador de login si es necesario
+            IUsuarioDAO loginControl = Factory.getUsuarioDAO();
+            Convertidor convertir = new Convertidor(); // Asume que el constructor no requiere argumentos
+            new frmLogin(loginControl, convertir).setVisible(true);
+        });
+    }
 
     /**
      * @param args the command line arguments
@@ -241,6 +261,7 @@ public class frmLogin extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnEntrar;
     private javax.swing.JButton btnSalir;
+    private javax.swing.JColorChooser jColorChooser1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;

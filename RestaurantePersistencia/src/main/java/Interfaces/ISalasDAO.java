@@ -5,6 +5,7 @@
 package Interfaces;
 
 import DTO.SalasDTO;
+import EntidadesJPA.Sala;
 import Persistencia.PersistenciaException;
 import java.util.List;
 
@@ -14,12 +15,16 @@ import java.util.List;
  */
 public interface ISalasDAO {
 
-    public boolean RegistrarSala(SalasDTO sl) throws PersistenciaException;
+    public boolean RegistrarSala(Sala sl) throws PersistenciaException;
 
     public List Listar() throws PersistenciaException;
 
     public boolean Eliminar(int id) throws PersistenciaException;
 
-    public boolean Modificar(SalasDTO sl) throws PersistenciaException;
+    public boolean Modificar(Sala sl) throws PersistenciaException;
+
+    public Sala obtenerSalaPorId(int idSala) throws PersistenciaException;
+
+    public Sala obtenerSalaPorNombre(String nombreSala) throws PersistenciaException;
 
 }
