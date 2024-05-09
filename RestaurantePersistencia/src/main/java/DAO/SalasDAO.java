@@ -4,6 +4,7 @@
  */
 package DAO;
 
+import Conexion.EntityManagerSingleton;
 import Conexion.IConexionBD;
 import DTO.SalasDTO;
 
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
 import javax.persistence.EntityTransaction;
+import javax.persistence.NoResultException;
 import javax.persistence.TypedQuery;
 
 /**
@@ -40,11 +42,11 @@ public class SalasDAO implements ISalasDAO {
 
     @Override
     public boolean RegistrarSala(Sala sl) throws PersistenciaException {
-        EntityManager entityManager = conexion.conexion();
+        EntityManager entityManager = null;
         EntityTransaction transaction = null;
         try {
             // Obtener el EntityManager
-
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
             // Iniciar una transacción
             transaction = entityManager.getTransaction();
             transaction.begin();
@@ -73,10 +75,10 @@ public class SalasDAO implements ISalasDAO {
 
     @Override
     public List Listar() throws PersistenciaException {
-        EntityManager entityManager = conexion.conexion();
+        EntityManager entityManager = null;
         try {
             // Obtener el EntityManager
-
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
             // Construir la consulta JPQL
             String jpql = "SELECT s FROM Sala s";
 
@@ -110,11 +112,11 @@ public class SalasDAO implements ISalasDAO {
 
     @Override
     public boolean Eliminar(int id) throws PersistenciaException {
-        EntityManager entityManager = conexion.conexion();
+        EntityManager entityManager = null;
         EntityTransaction transaction = null;
         try {
             // Obtener el EntityManager
-
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
             // Iniciar la transacción
             transaction = entityManager.getTransaction();
             transaction.begin();
@@ -151,11 +153,11 @@ public class SalasDAO implements ISalasDAO {
 
     @Override
     public boolean Modificar(Sala sl) throws PersistenciaException {
-        EntityManager entityManager = conexion.conexion();
+        EntityManager entityManager = null;
         EntityTransaction transaction = null;
         try {
             // Obtener el EntityManager
-
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
             // Iniciar la transacción
             transaction = entityManager.getTransaction();
             transaction.begin();
@@ -193,11 +195,11 @@ public class SalasDAO implements ISalasDAO {
 
     @Override
     public Sala obtenerSalaPorId(int idSala) throws PersistenciaException {
-        EntityManager entityManager = conexion.conexion();
+        EntityManager entityManager = null;
 
         try {
-            // Obtener el EntityManager
 
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
             // Buscar la Sala por su ID
             return entityManager.find(Sala.class, idSala);
         } catch (Exception e) {
@@ -212,11 +214,11 @@ public class SalasDAO implements ISalasDAO {
     }
 
     @Override
-    public Sala obtenerSalaPorNombre(String nombreSala) throws PersistenciaException {
-EntityManager entityManager = null;
+public Sala obtenerSalaPorNombre(String nombreSala) throws PersistenciaException {
+    EntityManager entityManager = null;
     try {
         // Obtener el EntityManager
-        entityManager = conexion.conexion();
+        entityManager = EntityManagerSingleton.obtenerEntityManager();
 
         // Consulta JPQL para obtener la sala por su nombre
         String jpql = "SELECT s FROM Sala s WHERE s.nombre = :nombre";
@@ -246,8 +248,8 @@ EntityManager entityManager = null;
         if (entityManager != null) {
             entityManager.close();
         }
-    }    }
-    
-    
+    }
+}
+
 
 }

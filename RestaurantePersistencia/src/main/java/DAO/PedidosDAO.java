@@ -3,11 +3,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
  */
 package DAO;
-
-import Conexion.Conexion;
+import Conexion.EntityManagerSingleton;
 import Conexion.IConexionBD;
 import DTO.DetallePedidoDTO;
-import DTO.PedidosDTO;
 import EntidadesJPA.DetallePedido;
 import EntidadesJPA.Pedido;
 import Interfaces.IPedidosDAO;
@@ -21,19 +19,11 @@ import com.itextpdf.text.Font;
 import com.itextpdf.text.FontFactory;
 import com.itextpdf.text.Paragraph;
 import com.itextpdf.text.Phrase;
-import com.itextpdf.text.Rectangle;
-import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
 import java.awt.Desktop;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.IOException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import javax.persistence.EntityManager;
@@ -67,11 +57,12 @@ public class PedidosDAO implements IPedidosDAO {
 
     @Override
     public int IdPedido() {
+        EntityManager entityManager = null;
         int id = 0;
         String jpql = "SELECT MAX(p.id) FROM Pedido p";
         try {
             // Obtenemos el EntityManager
-            EntityManager entityManager = conexion.conexion();
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
 
             // Creación de la consulta con TypedQuery
             TypedQuery<Integer> query = entityManager.createQuery(jpql, Integer.class);
@@ -86,11 +77,12 @@ public class PedidosDAO implements IPedidosDAO {
 
     @Override
     public int verificarEstado(int mesa, int id_sala) {
+        EntityManager entityManager = null;
         int id_pedido = 0;
         String jpql = "SELECT p.id FROM Pedido p WHERE p.numMesa = :mesa AND p.sala.id = :id_sala AND p.estado = :estado";
         try {
             // Obtenemos el EntityManager
-            EntityManager entityManager = conexion.conexion();
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
 
             // Creación de la consulta con TypedQuery
             TypedQuery<Integer> query = entityManager.createQuery(jpql, Integer.class);
@@ -115,7 +107,7 @@ public class PedidosDAO implements IPedidosDAO {
         int idGenerado = 0;
 
         try {
-            entityManager = conexion.conexion();
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
             transaction = entityManager.getTransaction();
             transaction.begin();
 
@@ -145,7 +137,7 @@ public class PedidosDAO implements IPedidosDAO {
         EntityTransaction transaction = null;
 
         try {
-            entityManager = conexion.conexion();
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
             transaction = entityManager.getTransaction();
             transaction.begin();
 
@@ -181,9 +173,10 @@ public class PedidosDAO implements IPedidosDAO {
 
     @Override
     public List verPedidoDetalle(int id_pedido) throws PersistenciaException {
+        EntityManager entityManager = null;
         List<DetallePedidoDTO> listaDetalles = new ArrayList<>();
         try {
-            EntityManager entityManager = conexion.conexion();
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
             String jpql = "SELECT d FROM DetallePedido d WHERE d.pedido.id = :id_pedido";
             TypedQuery<DetallePedido> query = entityManager.createQuery(jpql, DetallePedido.class);
             query.setParameter("id_pedido", id_pedido);
@@ -206,9 +199,10 @@ public class PedidosDAO implements IPedidosDAO {
 
     @Override
     public Pedido verPedido(int idPedido) throws PersistenciaException {
+        EntityManager entityManager = null;
         Pedido pedido;
         try {
-            EntityManager entityManager = conexion.conexion();
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
             String jpql = "SELECT p FROM Pedido p JOIN FETCH p.sala s WHERE p.id = :idPedido";
             TypedQuery<Pedido> query = entityManager.createQuery(jpql, Pedido.class);
             query.setParameter("idPedido", idPedido);
@@ -221,10 +215,11 @@ public class PedidosDAO implements IPedidosDAO {
 
     @Override
     public List finalizarPedido(int idPedido) {
+        EntityManager entityManager = null;
         List<DetallePedido> lista = new ArrayList<>();
         try {
             // Obtenemos el EntityManager
-            EntityManager entityManager = conexion.conexion();
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
 
             // Consulta JPQL para obtener los detalles del pedido específico
             String jpql = "SELECT d FROM DetallePedido d WHERE d.pedido.id = :idPedido";
@@ -245,9 +240,10 @@ public class PedidosDAO implements IPedidosDAO {
 
     @Override
     public void pdfPedido(int idPedido) throws DocumentException {
+        EntityManager entityManager = null;
         try {
             // Obtener el EntityManager
-            EntityManager entityManager = conexion.conexion();
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
 
             // Consulta JPQL para obtener la información del pedido
             String jpql = "SELECT p, s.nombre FROM Pedido p JOIN p.sala s WHERE p.id = :idPedido";
@@ -350,9 +346,9 @@ public class PedidosDAO implements IPedidosDAO {
 
     @Override
     public boolean actualizarEstado(int idPedido) throws PersistenciaException {
-
+        EntityManager entityManager = null;
         /// Obtener el EntityManager
-        EntityManager entityManager = conexion.conexion();
+        entityManager = EntityManagerSingleton.obtenerEntityManager();
 
         // Iniciar una transacción
         EntityTransaction transaction = entityManager.getTransaction();
@@ -393,9 +389,9 @@ public class PedidosDAO implements IPedidosDAO {
 
     @Override
     public List listarPedidos() throws PersistenciaException {
-
+        EntityManager entityManager = null;
         // Obtener el EntityManager
-        EntityManager entityManager = conexion.conexion();
+        entityManager = EntityManagerSingleton.obtenerEntityManager();
         try {
 
             // Construir la consulta JPQL

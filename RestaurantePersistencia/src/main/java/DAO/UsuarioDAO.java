@@ -1,8 +1,7 @@
 package DAO;
 
+import Conexion.EntityManagerSingleton;
 import Conexion.IConexionBD;
-
-
 
 import EntidadesJPA.Config;
 import EntidadesJPA.Usuario;
@@ -40,7 +39,8 @@ public class UsuarioDAO implements IUsuarioDAO {
     @Override
     public Usuario log(String usuario, String pass) throws PersistenciaException {
 
-        EntityManager entityManager = conexion.conexion();
+        EntityManager entityManager = null;
+        entityManager = EntityManagerSingleton.obtenerEntityManager();
         Usuario l = new Usuario();
         // Construcción de la consulta JPQL
         String jpql = "SELECT u FROM Usuario u WHERE u.usuario = :usuario AND u.pass = :pass";
@@ -51,7 +51,7 @@ public class UsuarioDAO implements IUsuarioDAO {
         query.setParameter("pass", pass);
         // Obtención del resultado
         Usuario usuarioEncontrado = query.getSingleResult();
-        // Asignación de los valores al DTO
+        // Asignación de los valorfes al DTO
         l.setId((int) usuarioEncontrado.getId());
         l.setNombre(usuarioEncontrado.getNombre());
         l.setUsuario(usuarioEncontrado.getUsuario());
@@ -61,45 +61,47 @@ public class UsuarioDAO implements IUsuarioDAO {
     }
 
     @Override
-   public void Registrar(Usuario reg) throws PersistenciaException {
-    EntityManager entityManager = conexion.conexion();
-    EntityTransaction transaction = entityManager.getTransaction();
-    try {
-        // Comenzar la transacción
-        transaction.begin();
+    public void Registrar(Usuario reg) throws PersistenciaException {
+        EntityManager entityManager = null;
+        entityManager = EntityManagerSingleton.obtenerEntityManager();
+        EntityTransaction transaction = entityManager.getTransaction();
+        try {
+            // Comenzar la transacción
+            transaction.begin();
 
-        // Crear un nuevo objeto Usuario y establecer sus atributos
-        Usuario usuario = new Usuario();
-        usuario.setNombre(reg.getNombre());
-        usuario.setUsuario(reg.getUsuario());
-        usuario.setPass(reg.getPass());
-        usuario.setRol(reg.getRol());
+            // Crear un nuevo objeto Usuario y establecer sus atributos
+            Usuario usuario = new Usuario();
+            usuario.setNombre(reg.getNombre());
+            usuario.setUsuario(reg.getUsuario());
+            usuario.setPass(reg.getPass());
+            usuario.setRol(reg.getRol());
 
-        // Persistir el objeto Usuario en la base de datos
-        entityManager.persist(usuario);
+            // Persistir el objeto Usuario en la base de datos
+            entityManager.persist(usuario);
 
-        // Confirmar la transacción
-        transaction.commit();
-    } catch (Exception e) {
-        // Revertir la transacción en caso de error
-        if (transaction != null && transaction.isActive()) {
-            transaction.rollback();
-        }
-        // Lanzar una excepción para notificar sobre el error
-        throw new PersistenciaException("Error al intentar registrar usuario", e);
-    } finally {
-        // Cerrar el EntityManager
-        if (entityManager != null) {
-            entityManager.close();
+            // Confirmar la transacción
+            transaction.commit();
+        } catch (Exception e) {
+            // Revertir la transacción en caso de error
+            if (transaction != null && transaction.isActive()) {
+                transaction.rollback();
+            }
+            // Lanzar una excepción para notificar sobre el error
+            throw new PersistenciaException("Error al intentar registrar usuario", e);
+        } finally {
+            // Cerrar el EntityManager
+            if (entityManager != null) {
+                entityManager.close();
+            }
         }
     }
-}
 
     @Override
     public List ListarUsuarios() throws PersistenciaException {
 
-        EntityManager entityManager = conexion.conexion();
-         List<Usuario> lista = null;
+        EntityManager entityManager = null;
+        entityManager = EntityManagerSingleton.obtenerEntityManager();
+        List<Usuario> lista = null;
         try {
             TypedQuery<Usuario> query = entityManager.createQuery("SELECT u FROM Usuario u", Usuario.class);
             lista = query.getResultList();
@@ -107,39 +109,40 @@ public class UsuarioDAO implements IUsuarioDAO {
             throw new PersistenciaException("Error al listar usuarios", e);
         }
         return lista;
-    
 
     }
 
     @Override
     public void ModificarDatos(Config conf) throws PersistenciaException {
-    EntityManager entityManager = conexion.conexion();
-    try {
-        Config configuracion = entityManager.find(Config.class, conf.getId());
-        if (configuracion != null) {
-            entityManager.getTransaction().begin();
-            configuracion.setRuc(conf.getRuc());
-            configuracion.setNombre(conf.getNombre());
-            configuracion.setTelefono(conf.getTelefono());
-            configuracion.setDireccion(conf.getDireccion());
-            configuracion.setMensaje(conf.getMensaje());
-            entityManager.getTransaction().commit();
-        } else {
-            throw new PersistenciaException("No se encontró la configuración en la base de datos.");
-        }
-    } catch (Exception e) {
-        throw new PersistenciaException("Error al modificar la configuración: " + e.getMessage(), e);
-    } finally {
-        if (entityManager != null) {
-            entityManager.close();
+        EntityManager entityManager = null;
+        entityManager = EntityManagerSingleton.obtenerEntityManager();
+        try {
+            Config configuracion = entityManager.find(Config.class, conf.getId());
+            if (configuracion != null) {
+                entityManager.getTransaction().begin();
+                configuracion.setRuc(conf.getRuc());
+                configuracion.setNombre(conf.getNombre());
+                configuracion.setTelefono(conf.getTelefono());
+                configuracion.setDireccion(conf.getDireccion());
+                configuracion.setMensaje(conf.getMensaje());
+                entityManager.getTransaction().commit();
+            } else {
+                throw new PersistenciaException("No se encontró la configuración en la base de datos.");
+            }
+        } catch (Exception e) {
+            throw new PersistenciaException("Error al modificar la configuración: " + e.getMessage(), e);
+        } finally {
+            if (entityManager != null) {
+                entityManager.close();
+            }
         }
     }
-}
 
     @Override
     public Config datosEmpresa() throws PersistenciaException {
 
-        EntityManager entityManager = conexion.conexion();
+        EntityManager entityManager = null;
+        entityManager = EntityManagerSingleton.obtenerEntityManager();
 
         List<Config> configuraciones = entityManager.createQuery("SELECT c FROM Config c", Config.class).getResultList();
         if (!configuraciones.isEmpty()) {

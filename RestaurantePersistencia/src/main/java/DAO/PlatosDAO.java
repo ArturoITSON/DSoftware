@@ -4,6 +4,7 @@
  */
 package DAO;
 
+import Conexion.EntityManagerSingleton;
 import Conexion.IConexionBD;
 import DTO.PlatosDTO;
 import EntidadesJPA.Plato;
@@ -40,9 +41,10 @@ public class PlatosDAO implements IPlatosDAO {
 
     @Override
     public boolean Registrar(Plato pla) throws PersistenciaException {
-        EntityManager entityManager = conexion.conexion();
+        EntityManager entityManager = null;
         EntityTransaction transaction = null;
         try {
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
             // Iniciar una transacción
             transaction = entityManager.getTransaction();
             transaction.begin();
@@ -78,8 +80,10 @@ public class PlatosDAO implements IPlatosDAO {
 
     @Override
     public List Listar(String valor, String fecha) throws PersistenciaException {
-        EntityManager entityManager = conexion.conexion();
+        EntityManager entityManager = null;
+
         try {
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
             // Construir la consulta JPQL
             String jpql;
             if (valor.equalsIgnoreCase("")) {
@@ -104,7 +108,6 @@ public class PlatosDAO implements IPlatosDAO {
                 platoDTO.setId((int) plato.getId());
                 platoDTO.setNombre(plato.getNombre());
                 platoDTO.setPrecio(plato.getPrecio());
-                platoDTO.setFecha(plato.getFecha());
                 listaDTO.add(platoDTO);
             }
             return listaDTO;
@@ -121,17 +124,17 @@ public class PlatosDAO implements IPlatosDAO {
 
     @Override
     public boolean Eliminar(int id) throws PersistenciaException {
-        EntityManager entityManager = conexion.conexion();
+        EntityManager entityManager = null;
         EntityTransaction transaction = null;
         try {
-            // Obtener el EntityManager
-
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
             // Iniciar una transacción
             transaction = entityManager.getTransaction();
             transaction.begin();
 
             // Encontrar el Plato por su ID
-            Plato plato = entityManager.find(Plato.class, id);
+            // Corrige el tipo de dato de id a Long
+            Plato plato = entityManager.find(Plato.class, (long) id);
             if (plato != null) {
                 // Si el plato existe, eliminarlo
                 entityManager.remove(plato);
@@ -158,11 +161,11 @@ public class PlatosDAO implements IPlatosDAO {
 
     @Override
     public boolean Modificar(Plato pla) throws PersistenciaException {
-        EntityManager entityManager = conexion.conexion();
+        EntityManager entityManager = null;
         EntityTransaction transaction = null;
         try {
             // Obtener el EntityManager
-
+            entityManager = EntityManagerSingleton.obtenerEntityManager();
             // Iniciar una transacción
             transaction = entityManager.getTransaction();
             transaction.begin();
